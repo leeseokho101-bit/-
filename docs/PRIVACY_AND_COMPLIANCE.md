@@ -11,7 +11,7 @@
 | 건강정보 최소수집       | 분석에 사용하는 검진 지표·문진 항목만 수집. 진단명·병력 자유기술 미수집                                                                                                                                |
 | API Key 서버측 보관     | `src/server/env.ts`(server-only)로만 접근, `NEXT_PUBLIC_` 금지                                                                                                                                         |
 | 환경변수 사용           | 비밀값은 `.env`(git 제외), 배포 시 Vercel 환경변수                                                                                                                                                     |
-| 비밀번호 평문 저장 금지 | 해시(argon2/bcrypt)만 저장                                                                                                                                                                             |
+| 비밀번호 평문 저장 금지 | scrypt 해시(salt 포함)만 저장 (`src/server/auth/password.ts`)                                                                                                                                          |
 | 로그 개인정보 금지      | `src/server/logger.ts`에서 민감 키·이메일·전화번호 마스킹, Prisma query 로그 비활성                                                                                                                    |
 | URL 노출 금지           | 건강정보는 POST body/Server Action으로만 전송, URL에는 추측 불가능한 ID만 사용                                                                                                                         |
 | 테스트 데이터           | 가상 인물만 사용 (`User.isSample`), 실제 개인정보 사용 금지                                                                                                                                            |
