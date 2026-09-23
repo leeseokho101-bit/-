@@ -1,0 +1,11 @@
+// 입체적 건강분석 — Prisma schema
+// 모델 정의는 STEP 3에서 추가합니다. (docs/ARCHITECTURE.md §4 참고)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
