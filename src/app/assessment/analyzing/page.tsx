@@ -1,26 +1,24 @@
-import { ButtonLink } from "@/components/ui/button-link";
-import { PageHeader } from "@/components/ui/page-header";
-import { Placeholder } from "@/components/ui/placeholder";
+import { redirect } from "next/navigation";
+import { ensureNarrative } from "@/features/analysis/narrative";
 import { routes } from "@/lib/routes";
+import { getNarrativeProvider } from "@/server/ai/provider";
 import { requireUser } from "@/server/auth/session";
+import { db } from "@/server/db";
 
 export const metadata = { title: "분석 중 | 입체적 건강분석" };
 
+/**
+ * 분석 결과 설명(AI 또는 템플릿)을 준비한 뒤 결과 화면으로 이동한다.
+ * 준비하는 동안에는 loading.tsx가 표시된다.
+ */
 export default async function AnalyzingPage() {
-  await requireUser(routes.report);
-  return (
-    <>
-      <PageHeader
-        title="입력이 완료되었어요"
-        description="검진 수치, 생활습관, 복용약 정보를 함께 살펴볼 준비가 되었습니다."
-      />
-      <Placeholder
-        label="분석 엔진 실행 → 완료 시 결과 화면으로 이동"
-        step={6}
-      />
-      <ButtonLink href={routes.report} className="mt-auto">
-        결과 보기 (임시)
-      </ButtonLink>
-    </>
-  );
+  const user = await requireUser(routes.report);
+  const latest = await db.assessment.findFirst({
+    where: { userId: user.id, status: "ANALYZED" },
+    orderBy: { submittedAt: "desc" },
+    select: { id: true },
+  });
+  if (!latest) redirect(routes.assessment);
+  await ensureNarrative(db, latest.id, getNarrativeProvider());
+  redirect(routes.report);
 }

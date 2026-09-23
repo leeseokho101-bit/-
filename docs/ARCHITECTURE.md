@@ -384,6 +384,16 @@ type PriorityItem = {
 - Safety Guard: 금지 패턴("~입니다(질병명)", "위험이 N%", "약을 중단/복용하세요", "병원에 갈 필요 없") 정규식 검사 → 위반 시 재생성 1회 → 실패 시 템플릿 문구.
 - 모든 결과 화면 하단 고정 문구: "본 결과는 건강관리 참고용이며 의학적 진단이 아닙니다. 정확한 판단은 의료진과 상담하시기 바랍니다."
 
+> **구현 기준(STEP 7)** — 초안 대비 변경점
+>
+> - 코드: `src/domain/narrative/*`(입력·템플릿·안전검사·병합, 순수 함수), `src/server/ai/*`(프롬프트·공급자), `src/features/analysis/narrative.ts`(저장)
+> - 입력(`NarrativeInput`): 연령대·성별 + 10개 영역(상태·관리 필요도·근거 문장·관리 중 여부) + TOP 3(근거·연결 영역·순위 설명 힌트). 12주 계획 코칭은 STEP 9에서 추가.
+> - 출력: `{ summary, domains[{code, explanation}], priorities[{code, why, firstStep}], encouragement }` — **상태·순서 필드가 없어** LLM이 판정을 바꿀 수 없음. 엔진에 없는 영역·순서는 무시.
+> - 안전 검사는 **문장 단위**: 통과 못한 문장만 템플릿 문구로 대체 (재생성 없이 → 비용·지연 절약). `source`: `llm` / `mixed` / `template`
+> - 모델: `LLM_MODEL`(기본 `claude-opus-5`), `effort: "low"`, structured outputs(JSON Schema), 서버측 거절 대체 `fallbacks: "default"`, 타임아웃 45초·재시도 1회. 해당 모델은 `temperature`를 지원하지 않아, 일관성은 고정된 시스템 프롬프트·구조화 입력·**같은 입력(inputHash) 재분석 시 이전 설명 재사용**으로 확보.
+> - API Key가 없거나 실패·거절 시 전체 템플릿 설명 사용 → 서비스는 LLM 없이도 동작.
+> - 흐름: 분석 시작 → 엔진 결과 저장 → `/assessment/analyzing`(로딩 화면)에서 설명 생성·저장 → `/report`
+
 ---
 
 ## 6. API 구조

@@ -19,7 +19,6 @@ import { echoValues, toFieldErrors, type FormState } from "@/lib/form-state";
 import {
   assessmentStepPath,
   getAssessmentStep,
-  routes,
   type AssessmentStepSlug,
 } from "@/lib/routes";
 import { db } from "@/server/db";
@@ -246,5 +245,5 @@ export async function submitAssessment(_prev: FormState): Promise<FormState> {
     };
   }
   logger.info("assessment analyzed", { userId: user.id, assessmentId });
-  redirect(routes.report);
+  redirect(getAssessmentStep("review").nextPath);
 }

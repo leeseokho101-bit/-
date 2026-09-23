@@ -20,6 +20,12 @@ npm run db:migrate          # 로컬 PostgreSQL에 테이블 생성
 npm run dev                 # http://localhost:3000
 ```
 
+## AI 설명
+
+`.env`의 `ANTHROPIC_API_KEY`가 있으면 분석 결과를 Claude가 쉬운 말로 설명합니다 (`LLM_MODEL`, 기본 `claude-opus-5`).
+키가 없거나 호출이 실패하면 템플릿 설명으로 자동 대체되어 서비스는 그대로 동작합니다.
+건강 판정(상태·우선순위)은 항상 규칙 엔진이 결정하며, AI 문장은 금지 표현 검사를 통과한 것만 표시합니다.
+
 ## 가상 사용자 (개발 전용)
 
 `npm run db:seed` 또는 개발 서버의 `/dev/samples` 화면에서 가상 사용자 A~E를 불러옵니다.
@@ -52,7 +58,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 4 UI 구현
 - [x] STEP 5 샘플 데이터
 - [x] STEP 6 Rule-based Health Analysis Engine
-- [ ] STEP 7 AI 연동
+- [x] STEP 7 AI 연동
 - [ ] STEP 8 결과 Dashboard
 - [ ] STEP 9 12주 건강관리
 - [ ] STEP 10 테스트

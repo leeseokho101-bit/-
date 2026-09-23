@@ -48,26 +48,29 @@ export function evaluateMetabolic(s: HealthSnapshot): DomainResult {
   const glucoseManaged = s.managed.includes("GLUCOSE");
   const lipidManaged = s.managed.includes("LIPID");
 
-  // [요소, 입력 여부, 해당 여부]
-  const components: [string, boolean, boolean][] = [
+  // [요소, 입력 여부, 해당 여부, 복용 목적상 관리 중]
+  const components: [string, boolean, boolean, boolean?][] = [
     ["waist", isPresent(WAIST), isPresent(WAIST) && WAIST >= M.waist[sex]],
     [
       "bloodPressure",
       bpManaged || (isPresent(SBP) && isPresent(DBP)),
       bpManaged ||
         (isPresent(SBP) && isPresent(DBP) && (SBP >= M.sbp || DBP >= M.dbp)),
+      bpManaged,
     ],
     [
       "glucose",
       glucoseManaged || isPresent(FASTING_GLUCOSE),
       glucoseManaged ||
         (isPresent(FASTING_GLUCOSE) && FASTING_GLUCOSE >= M.fastingGlucose),
+      glucoseManaged,
     ],
     [
       "triglyceride",
       lipidManaged || isPresent(TRIGLYCERIDE),
       lipidManaged ||
         (isPresent(TRIGLYCERIDE) && TRIGLYCERIDE >= M.triglyceride),
+      lipidManaged,
     ],
     ["hdl", isPresent(HDL), isPresent(HDL) && HDL < M.hdl[sex]],
   ];
@@ -76,12 +79,12 @@ export function evaluateMetabolic(s: HealthSnapshot): DomainResult {
   const count = components.filter(([, , hit]) => hit).length;
   const f: Finding[] = components
     .filter(([, has]) => has)
-    .map(([name, , hit]) =>
+    .map(([name, , hit, managed]) =>
       finding(
         `metabolic.${name}`,
         hit,
         hit ? "BORDERLINE" : "OPTIMAL",
-        `metabolic.${name}.${hit ? "hit" : "ok"}`,
+        `metabolic.${name}.${managed ? "managed" : hit ? "hit" : "ok"}`,
         0,
       ),
     );

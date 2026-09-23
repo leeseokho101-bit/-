@@ -1,10 +1,15 @@
 import "server-only";
+import { ageOn } from "@/domain/analysis/snapshot";
 import type {
   AnalysisOutput,
   DomainResult,
   PriorityItem,
 } from "@/domain/analysis/types";
+import { buildNarrativeInput } from "@/domain/narrative/input";
+import { buildTemplateNarrative } from "@/domain/narrative/templates";
+import type { Narrative } from "@/domain/narrative/types";
 import { db } from "@/server/db";
+import { parseStoredNarrative, toAnalysisOutput } from "./narrative";
 
 export type ReportData = {
   assessmentId: string;
@@ -14,6 +19,7 @@ export type ReportData = {
   domains: DomainResult[];
   priorities: PriorityItem[];
   dataGaps: AnalysisOutput["dataGaps"];
+  narrative: Narrative;
 };
 
 /** 사용자의 가장 최근 분석 결과 (본인 것만 조회) */
@@ -26,28 +32,43 @@ export async function getLatestReport(
     select: {
       id: true,
       checkupDate: true,
+      submittedAt: true,
+      createdAt: true,
+      user: { select: { profile: { select: { sex: true, birthDate: true } } } },
       result: {
         select: {
           engineVersion: true,
           domains: true,
           priorities: true,
+          narrative: true,
           updatedAt: true,
         },
       },
     },
   });
   if (!a?.result) return null;
-  // 서버가 저장한 엔진 출력 JSON (engineVersion으로 구조 식별)
-  const domains = a.result.domains as unknown as DomainResult[];
+
+  const output = toAnalysisOutput(a.result);
+  // 설명이 아직 저장되지 않았으면 템플릿 설명을 즉석에서 만든다
+  let narrative = parseStoredNarrative(a.result.narrative);
+  if (!narrative) {
+    const profile = a.user.profile;
+    const age = profile
+      ? ageOn(profile.birthDate, a.checkupDate ?? a.submittedAt ?? a.createdAt)
+      : 50;
+    narrative = buildTemplateNarrative(
+      output,
+      buildNarrativeInput(output, { age, sex: profile?.sex ?? "MALE" }),
+    );
+  }
   return {
     assessmentId: a.id,
     analyzedAt: a.result.updatedAt,
     checkupDate: a.checkupDate,
-    engineVersion: a.result.engineVersion,
-    domains,
-    priorities: a.result.priorities as unknown as PriorityItem[],
-    dataGaps: domains
-      .filter((d) => d.status === "DATA_INSUFFICIENT")
-      .map((d) => d.domain),
+    engineVersion: output.engineVersion,
+    domains: output.domains,
+    priorities: output.priorities,
+    dataGaps: output.dataGaps,
+    narrative,
   };
 }

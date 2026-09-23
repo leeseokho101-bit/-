@@ -19,7 +19,10 @@ export default async function ProfileReportPage() {
         title="나의 건강 프로파일"
         description="점(●)이 많을수록 관리가 더 필요한 영역이에요."
       />
-      <DomainStatusList domains={report.domains} />
+      <DomainStatusList
+        domains={report.domains}
+        explanations={report.narrative.domains}
+      />
       <Placeholder label="영역별 쉬운 설명 · 판단 근거 카드" step={8} />
     </>
   );

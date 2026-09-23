@@ -14,7 +14,7 @@ const envSchema = z.object({
     .string()
     .min(32, "SESSION_SECRET must be at least 32 characters"),
   ANTHROPIC_API_KEY: z.string().optional().default(""),
-  LLM_MODEL: z.string().default("claude-sonnet-5"),
+  LLM_MODEL: z.string().default("claude-opus-5"),
 });
 
 export type ServerEnv = z.infer<typeof envSchema>;
