@@ -18,7 +18,8 @@
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate",
     "test:db": "vitest run --config vitest.db.config.mts",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
@@ -30,6 +31,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.4",
     "@types/react": "^19",
@@ -49,5 +52,11 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed/index.ts"
+  },
+  "overrides": {
+    "@axe-core/playwright": {
+      "playwright-core": "1.56.1"
+    },
+    "deepmerge-ts": "^8.0.0"
   }
 }

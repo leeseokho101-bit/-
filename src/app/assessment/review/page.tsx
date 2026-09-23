@@ -43,7 +43,7 @@ export default async function ReviewStepPage() {
                     className={
                       row.value
                         ? "text-right font-medium"
-                        : "text-muted/70 text-right"
+                        : "text-muted text-right"
                     }
                   >
                     {row.value ?? "미입력"}

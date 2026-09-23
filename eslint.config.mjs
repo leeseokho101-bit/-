@@ -13,7 +13,7 @@ const eslintConfig = defineConfig([
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       // 서버 로그는 src/server/logger.ts 사용
-      "no-console": "warn",
+      "no-console": "error",
     },
   },
   {

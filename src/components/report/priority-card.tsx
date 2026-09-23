@@ -26,11 +26,9 @@ export function PriorityCard({
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-4">
-        <span
-          className="text-primary text-2xl font-bold"
-          aria-label={`${p.rank}순위`}
-        >
-          {String(p.rank).padStart(2, "0")}
+        <span className="text-primary text-2xl font-bold">
+          <span aria-hidden>{String(p.rank).padStart(2, "0")}</span>
+          <span className="sr-only">{p.rank}순위</span>
         </span>
         <div className="flex-1">
           <p className="text-lg font-bold">{c.label}</p>

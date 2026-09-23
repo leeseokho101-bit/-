@@ -1,7 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 
 export const inputClass =
-  "min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-base text-foreground placeholder:text-muted/60 focus:border-primary focus:outline-2 focus:outline-primary/30 aria-[invalid=true]:border-red-600";
+  "min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-base text-foreground placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-primary/30 aria-[invalid=true]:border-red-600";
 
 /** 라벨 · 도움말 · 오류 메시지를 갖춘 입력 필드 */
 export function Field({

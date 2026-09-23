@@ -9,13 +9,18 @@ export function LevelDots({
 }) {
   if (level === null) {
     return (
-      <span className="text-muted tracking-widest" aria-label="판단 보류">
+      <span
+        role="img"
+        className="text-muted tracking-widest"
+        aria-label="판단 보류"
+      >
         - - - - -
       </span>
     );
   }
   return (
     <span
+      role="img"
       className="tracking-widest"
       aria-label={`관리 필요도 5단계 중 ${level}단계`}
     >

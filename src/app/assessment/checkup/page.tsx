@@ -51,20 +51,22 @@ export default async function CheckupStepPage() {
         {METRIC_GROUPS.map(({ group, label }) => (
           <FormSection key={group} title={label} collapsible>
             {group === "BODY" && (
-              <dl className="bg-background grid grid-cols-3 gap-2 rounded-xl p-3 text-center text-sm">
-                {[
-                  { label: "키", value: HEIGHT, unit: "cm" },
-                  { label: "체중", value: WEIGHT, unit: "kg" },
-                  { label: "BMI", value: BMI, unit: "" },
-                ].map((m) => (
-                  <div key={m.label}>
-                    <dt className="text-muted">{m.label}</dt>
-                    <dd className="font-semibold">
-                      {m.value !== undefined ? `${m.value}${m.unit}` : "-"}
-                    </dd>
-                  </div>
-                ))}
-                <p className="text-muted col-span-3 text-xs">
+              <div className="bg-background flex flex-col gap-2 rounded-xl p-3 text-center text-sm">
+                <dl className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "키", value: HEIGHT, unit: "cm" },
+                    { label: "체중", value: WEIGHT, unit: "kg" },
+                    { label: "BMI", value: BMI, unit: "" },
+                  ].map((m) => (
+                    <div key={m.label}>
+                      <dt className="text-muted">{m.label}</dt>
+                      <dd className="font-semibold">
+                        {m.value !== undefined ? `${m.value}${m.unit}` : "-"}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-muted text-xs">
                   키·체중은{" "}
                   <Link
                     href={assessmentStepPath("profile")}
@@ -74,7 +76,7 @@ export default async function CheckupStepPage() {
                   </Link>
                   에서 수정할 수 있고, BMI는 자동 계산됩니다.
                 </p>
-              </dl>
+              </div>
             )}
             {metricsByGroup(group)
               .filter((m) => inputCodes.has(m.code))

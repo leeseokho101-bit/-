@@ -6,6 +6,7 @@
 - 설계 문서: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - 개인정보·법규 검토: [`docs/PRIVACY_AND_COMPLIANCE.md`](docs/PRIVACY_AND_COMPLIANCE.md)
 - 분석 규칙 기준(초안, 의료 자문 필요): [`docs/RULES_REFERENCE.md`](docs/RULES_REFERENCE.md)
+- 보안·개인정보 점검 결과: [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
 
 ## 기술 스택
 
@@ -25,6 +26,16 @@ npm run dev                 # http://localhost:3000
 `.env`의 `ANTHROPIC_API_KEY`가 있으면 분석 결과를 Claude가 쉬운 말로 설명합니다 (`LLM_MODEL`, 기본 `claude-opus-5`).
 키가 없거나 호출이 실패하면 템플릿 설명으로 자동 대체되어 서비스는 그대로 동작합니다.
 건강 판정(상태·우선순위)은 항상 규칙 엔진이 결정하며, AI 문장은 금지 표현 검사를 통과한 것만 표시합니다.
+
+## 테스트
+
+| 종류             | 개수 | 내용                                                                                               |
+| ---------------- | ---- | -------------------------------------------------------------------------------------------------- |
+| 단위 (Vitest)    | 156  | 분석 엔진 경계값·가상 사용자 A~E·결정성, 우선순위, 설명 문구·금지 표현, 12주 계획, 입력 검증, 인증 |
+| DB 통합          | 13   | 스키마·cascade 삭제, 분석 저장·입력 해시, 설명 재사용, 12주 계획·체크                              |
+| E2E (Playwright) | 12   | 가입→입력→분석→결과→계획→체크→대시보드→삭제, 입력 오류, 보안, 접근성(axe)                          |
+
+GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄워 전체를 실행합니다.
 
 ## 가상 사용자 (개발 전용)
 
@@ -61,7 +72,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 7 AI 연동
 - [x] STEP 8 결과 Dashboard
 - [x] STEP 9 12주 건강관리
-- [ ] STEP 10 테스트
+- [x] STEP 10 테스트
 - [ ] STEP 11 배포
 
 > ⚠️ 본 서비스는 의료행위(진단·처방)를 하지 않습니다. 결과는 건강관리 참고용입니다.
