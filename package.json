@@ -20,7 +20,7 @@
     "test:db": "vitest run --config vitest.db.config.mts",
     "db:reset": "prisma migrate reset --force",
     "test:e2e": "playwright test",
-    "vercel-build": "prisma migrate deploy && next build",
+    "vercel-build": "node scripts/check-deploy-env.mjs && prisma migrate deploy && next build",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
