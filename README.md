@@ -5,6 +5,7 @@
 
 - 설계 문서: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - 개인정보·법규 검토: [`docs/PRIVACY_AND_COMPLIANCE.md`](docs/PRIVACY_AND_COMPLIANCE.md)
+- 분석 규칙 기준(초안, 의료 자문 필요): [`docs/RULES_REFERENCE.md`](docs/RULES_REFERENCE.md)
 
 ## 기술 스택
 
@@ -50,7 +51,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 3 DB Schema
 - [x] STEP 4 UI 구현
 - [x] STEP 5 샘플 데이터
-- [ ] STEP 6 Rule-based Health Analysis Engine
+- [x] STEP 6 Rule-based Health Analysis Engine
 - [ ] STEP 7 AI 연동
 - [ ] STEP 8 결과 Dashboard
 - [ ] STEP 9 12주 건강관리

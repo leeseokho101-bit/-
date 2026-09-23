@@ -33,8 +33,9 @@ export const domainContent: Record<
   },
   LIVER: {
     label: "간 건강",
-    short: "AST·ALT·γ-GTP·음주",
-    description: "간 효소 수치와 음주 습관을 함께 살펴봅니다.",
+    short: "AST·ALT·γ-GTP",
+    description:
+      "간 효소 수치(AST·ALT·γ-GTP)를 살펴봅니다. 음주 습관은 생활습관 영역에서 함께 봅니다.",
     kind: "BODY",
   },
   KIDNEY: {

@@ -14,10 +14,12 @@ import {
   surveyAnswersSchema,
   type SurveyAnswers,
 } from "@/domain/health-snapshot/survey";
+import { runAnalysis } from "@/features/analysis/run";
 import { echoValues, toFieldErrors, type FormState } from "@/lib/form-state";
 import {
   assessmentStepPath,
   getAssessmentStep,
+  routes,
   type AssessmentStepSlug,
 } from "@/lib/routes";
 import { db } from "@/server/db";
@@ -231,6 +233,18 @@ export async function submitAssessment(_prev: FormState): Promise<FormState> {
     where: { id: assessmentId },
     data: { status: "SUBMITTED", submittedAt: new Date() },
   });
-  logger.info("assessment submitted", { userId: user.id, assessmentId });
-  redirect(getAssessmentStep("review").nextPath);
+  try {
+    await db.$transaction((tx) => runAnalysis(tx, assessmentId));
+  } catch (error) {
+    await db.assessment.update({
+      where: { id: assessmentId },
+      data: { status: "DRAFT" },
+    });
+    logger.error("analysis failed", { userId: user.id, assessmentId, error });
+    return {
+      message: "분석 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+    };
+  }
+  logger.info("assessment analyzed", { userId: user.id, assessmentId });
+  redirect(routes.report);
 }
