@@ -60,7 +60,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 6 Rule-based Health Analysis Engine
 - [x] STEP 7 AI 연동
 - [x] STEP 8 결과 Dashboard
-- [ ] STEP 9 12주 건강관리
+- [x] STEP 9 12주 건강관리
 - [ ] STEP 10 테스트
 - [ ] STEP 11 배포
 

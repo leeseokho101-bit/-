@@ -3,6 +3,8 @@ import type { z } from "zod";
 /** Server Action ↔ 폼 공통 상태 */
 export type FormState = {
   message?: string;
+  /** 성공 안내 (예: 주간 피드백) */
+  notice?: string;
   fieldErrors?: Record<string, string>;
   /** 오류 시 입력값 유지 */
   values?: Record<string, string>;

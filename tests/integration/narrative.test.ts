@@ -39,6 +39,9 @@ function fakeProvider(
         encouragement: "AI 격려",
       };
     },
+    async generatePlanCoaching() {
+      return { weeks: [] };
+    },
   };
   return p;
 }

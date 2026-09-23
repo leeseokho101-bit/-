@@ -7,12 +7,22 @@ import {
   type LlmNarrative,
 } from "@/domain/narrative/types";
 import { getServerEnv } from "@/server/env";
-import { REPORT_NARRATIVE_SYSTEM_PROMPT } from "./prompts";
+import {
+  llmCoachingJsonSchema,
+  llmCoachingSchema,
+  type CoachingInput,
+  type LlmCoaching,
+} from "@/domain/plan/coaching";
+import {
+  PLAN_COACHING_SYSTEM_PROMPT,
+  REPORT_NARRATIVE_SYSTEM_PROMPT,
+} from "./prompts";
 
 /** LLM 공급자 추상화 — 교체·테스트가 쉽도록 인터페이스로 분리 */
 export interface NarrativeProvider {
   readonly model: string;
   generateReportNarrative(input: NarrativeInput): Promise<LlmNarrative>;
+  generatePlanCoaching(input: CoachingInput): Promise<LlmCoaching>;
 }
 
 export class NarrativeProviderError extends Error {
@@ -32,7 +42,33 @@ export class AnthropicNarrativeProvider implements NarrativeProvider {
     private readonly create: CreateFn,
   ) {}
 
-  async generateReportNarrative(input: NarrativeInput): Promise<LlmNarrative> {
+  generateReportNarrative(input: NarrativeInput): Promise<LlmNarrative> {
+    return this.structured(
+      REPORT_NARRATIVE_SYSTEM_PROMPT,
+      `다음 분석 결과를 설명해 주세요.\n\n${JSON.stringify(input)}`,
+      llmNarrativeJsonSchema,
+      llmNarrativeSchema,
+    );
+  }
+
+  generatePlanCoaching(input: CoachingInput): Promise<LlmCoaching> {
+    return this.structured(
+      PLAN_COACHING_SYSTEM_PROMPT,
+      `다음 12주 계획의 주차별 코칭 메시지를 작성해 주세요.\n\n${JSON.stringify(input)}`,
+      llmCoachingJsonSchema,
+      llmCoachingSchema,
+    );
+  }
+
+  /** 구조화 출력 요청 → JSON 파싱 → zod 검증 */
+  private async structured<T>(
+    system: string,
+    userContent: string,
+    jsonSchema: object,
+    schema: {
+      safeParse(v: unknown): { success: true; data: T } | { success: false };
+    },
+  ): Promise<T> {
     let response: Anthropic.Beta.BetaMessage;
     try {
       response = await this.create({
@@ -42,22 +78,16 @@ export class AnthropicNarrativeProvider implements NarrativeProvider {
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
         system: [
-          {
-            type: "text",
-            text: REPORT_NARRATIVE_SYSTEM_PROMPT,
-            cache_control: { type: "ephemeral" },
-          },
+          { type: "text", text: system, cache_control: { type: "ephemeral" } },
         ],
-        messages: [
-          {
-            role: "user",
-            content: `다음 분석 결과를 설명해 주세요.\n\n${JSON.stringify(input)}`,
-          },
-        ],
+        messages: [{ role: "user", content: userContent }],
         output_config: {
           // 짧은 설명문 작성이라 낮은 effort로 충분
           effort: "low",
-          format: { type: "json_schema", schema: llmNarrativeJsonSchema },
+          format: {
+            type: "json_schema",
+            schema: jsonSchema as Record<string, unknown>,
+          },
         },
       });
     } catch (error) {
@@ -88,7 +118,7 @@ export class AnthropicNarrativeProvider implements NarrativeProvider {
     } catch {
       throw new NarrativeProviderError("invalid-output", "not json");
     }
-    const parsed = llmNarrativeSchema.safeParse(json);
+    const parsed = schema.safeParse(json);
     if (!parsed.success)
       throw new NarrativeProviderError("invalid-output", "schema mismatch");
     return parsed.data;

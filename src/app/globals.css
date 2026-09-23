@@ -12,6 +12,9 @@
   --border: #e3e8ee;
   --primary: #1f6f8b;
   --primary-foreground: #ffffff;
+  /* 차트 데이터 색 (dataviz 검증 통과: 명도·채도·대비) · 미터 트랙은 같은 색상의 밝은 단계 */
+  --chart-1: #1a7fa6;
+  --chart-track: #d8eaf2;
 }
 
 @theme inline {
@@ -22,6 +25,8 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-track: var(--chart-track);
   --font-sans:
     "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
     system-ui, sans-serif;
