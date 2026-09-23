@@ -1,12 +1,16 @@
-import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { Placeholder } from "@/components/ui/placeholder";
-import { assessmentStepPath, assessmentSteps } from "@/lib/routes";
+import { findDraftAssessment } from "@/features/assessment/service";
+import { StartAssessmentForm } from "@/features/assessment/start-form";
+import { assessmentSteps, routes } from "@/lib/routes";
+import { requireUser } from "@/server/auth/session";
 
 export const metadata = { title: "건강분석 시작 | 입체적 건강분석" };
 
-export default function AssessmentStartPage() {
+export default async function AssessmentStartPage() {
+  const user = await requireUser(routes.assessment);
+  const draft = await findDraftAssessment(user.id);
+
   return (
     <>
       <PageHeader
@@ -26,13 +30,7 @@ export default function AssessmentStartPage() {
           ))}
         </ol>
       </Card>
-      <Placeholder
-        label="개인정보·건강정보 수집 동의 (항목·목적·보관기간)"
-        step={4}
-      />
-      <ButtonLink href={assessmentStepPath("profile")} className="mt-auto">
-        동의하고 시작하기
-      </ButtonLink>
+      <StartAssessmentForm needsConsent={!user.consentAt} hasDraft={!!draft} />
     </>
   );
 }

@@ -1,6 +1,8 @@
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/ui/page-header";
 import { Placeholder } from "@/components/ui/placeholder";
+import { routes } from "@/lib/routes";
+import { requireUser } from "@/server/auth/session";
 
 export const metadata = { title: "대시보드 | 입체적 건강분석" };
 
@@ -13,7 +15,8 @@ const sections = [
   { label: "최근 변화", step: 9 },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await requireUser(routes.dashboard);
   return (
     <PageContainer>
       <PageHeader title="대시보드" description="나의 건강관리 현황입니다." />
