@@ -63,37 +63,47 @@ export default async function LifestyleStepPage() {
           ))}
         </FormSection>
         <FormSection title="음주">
-          <ChoiceField
-            name="alcohol.frequency"
-            label="술은 얼마나 자주 드시나요?"
-            options={freqOptions}
-          />
-          <NumberField
-            name="alcohol.drinksPerOccasion"
-            label="한 번 마실 때 양"
-            unit="잔"
-            decimals={1}
-            help="소주잔 기준이에요. 맥주 1캔(355mL)은 약 1.5잔으로 계산해 주세요."
-            optional
-          />
+          <div className="group/alc flex flex-col gap-5">
+            <ChoiceField
+              name="alcohol.frequency"
+              label="술은 얼마나 자주 드시나요?"
+              options={freqOptions}
+            />
+            {/* "안 함" 선택 시 음주량 숨김 (저장 시에도 제외됨) */}
+            <div className="group-has-[input[value=NEVER]:checked]/alc:hidden">
+              <NumberField
+                name="alcohol.drinksPerOccasion"
+                label="한 번 마실 때 양"
+                unit="잔"
+                decimals={1}
+                help="소주잔 기준이에요. 맥주 1캔(355mL)은 약 1.5잔으로 계산해 주세요."
+                optional
+              />
+            </div>
+          </div>
         </FormSection>
         <FormSection title="흡연">
-          <ChoiceField
-            name="smoking.status"
-            label="담배를 피우시나요?"
-            help="전자담배도 포함해 주세요."
-            columns={1}
-            options={SMOKING_STATUSES.map((s) => ({
-              value: s,
-              label: smokingLabels[s],
-            }))}
-          />
-          <NumberField
-            name="smoking.cigarettesPerDay"
-            label="현재 피우신다면, 하루 흡연량"
-            unit="개비"
-            optional
-          />
+          <div className="group/smoke flex flex-col gap-5">
+            <ChoiceField
+              name="smoking.status"
+              label="담배를 피우시나요?"
+              help="전자담배도 포함해 주세요."
+              columns={1}
+              options={SMOKING_STATUSES.map((s) => ({
+                value: s,
+                label: smokingLabels[s],
+              }))}
+            />
+            {/* "현재 피움" 선택 시에만 흡연량 표시 */}
+            <div className="hidden group-has-[input[value=CURRENT]:checked]/smoke:block">
+              <NumberField
+                name="smoking.cigarettesPerDay"
+                label="하루 흡연량"
+                unit="개비"
+                optional
+              />
+            </div>
+          </div>
         </FormSection>
         <FormSection title="스트레스">
           <ChoiceField

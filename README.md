@@ -35,7 +35,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 1 프로젝트 셋업
 - [x] STEP 2 페이지 구조
 - [x] STEP 3 DB Schema
-- [ ] STEP 4 UI 구현
+- [x] STEP 4 UI 구현
 - [ ] STEP 5 샘플 데이터
 - [ ] STEP 6 Rule-based Health Analysis Engine
 - [ ] STEP 7 AI 연동
