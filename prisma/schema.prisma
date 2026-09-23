@@ -1,5 +1,10 @@
-// 입체적 건강분석 — Prisma schema
-// 모델 정의는 STEP 3에서 추가합니다. (docs/ARCHITECTURE.md §4 참고)
+// 입체적 건강분석 — Prisma schema (docs/ARCHITECTURE.md §4)
+//
+// 원칙
+// - 최소수집: 주민등록번호·주소·전화번호는 저장하지 않는다.
+// - 입력 원본(Measurement/SurveyResponse/Medication) · 엔진 결과(AnalysisResult) · LLM 문구를 분리 저장한다.
+// - 검진 지표는 (metric, value, unit, source) 행 구조로 저장해 새 지표·데이터 출처 추가 시 스키마 변경을 최소화한다.
+// - 가상 사용자는 User.isSample = true 로 구분한다.
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +13,248 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────── 사용자 · 인증 ───────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  /// 해시만 저장 (평문 금지). 개발용 계정 로그인에만 사용.
+  passwordHash   String?
+  displayName    String
+  /// 개발·데모용 가상 사용자 여부
+  isSample       Boolean   @default(false)
+  /// 개인정보·건강정보 수집 동의 시각과 동의서 버전
+  consentAt      DateTime?
+  consentVersion String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  /// 탈퇴 요청 시각 (soft delete 후 파기)
+  deletedAt      DateTime?
+
+  profile     Profile?
+  sessions    Session[]
+  assessments Assessment[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  /// 쿠키에는 원본 토큰, DB에는 SHA-256 해시만 저장한다.
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Profile {
+  userId    String   @id
+  sex       Sex
+  /// 연령 계산용
+  birthDate DateTime @db.Date
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+// ─────────────────────────────── 건강분석 입력 ───────────────────────────────
+
+/// 한 번의 건강분석 단위. 재분석 시 새 Assessment를 만들어 변화를 추적한다.
+model Assessment {
+  id          String           @id @default(cuid())
+  userId      String
+  status      AssessmentStatus @default(DRAFT)
+  checkupDate DateTime?        @db.Date
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  submittedAt DateTime?
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  measurements Measurement[]
+  survey       SurveyResponse?
+  medications  Medication[]
+  result       AnalysisResult?
+  plan         CarePlan?
+
+  @@index([userId, createdAt])
+  @@map("assessments")
+}
+
+enum AssessmentStatus {
+  DRAFT
+  SUBMITTED
+  ANALYZED
+  FAILED
+}
+
+/// 신체 계측 · 건강검진 지표
+model Measurement {
+  id           String     @id @default(cuid())
+  assessmentId String
+  metric       MetricCode
+  value        Decimal    @db.Decimal(8, 2)
+  /// 예: "cm", "kg", "kg/m2", "mmHg", "mg/dL", "%", "U/L", "mL/min/1.73m2"
+  unit         String
+  source       DataSource @default(MANUAL)
+  measuredAt   DateTime?
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, metric])
+  @@map("measurements")
+}
+
+enum MetricCode {
+  HEIGHT
+  WEIGHT
+  BMI
+  WAIST
+  SBP
+  DBP
+  FASTING_GLUCOSE
+  HBA1C
+  TOTAL_CHOLESTEROL
+  LDL
+  HDL
+  TRIGLYCERIDE
+  AST
+  ALT
+  GGT
+  CREATININE
+  EGFR
+}
+
+/// 데이터 출처. MVP는 MANUAL만 사용하고 나머지는 향후 확장용.
+enum DataSource {
+  MANUAL
+  PDF_OCR
+  MYDATA
+  WEARABLE
+}
+
+/// 건강문진 + 생활습관 응답. 문항 확장을 고려해 버전이 있는 JSON으로 저장한다.
+model SurveyResponse {
+  assessmentId  String   @id
+  /// 예: "survey-v1" (zod 스키마 버전과 일치)
+  schemaVersion String
+  answers       Json
+  updatedAt     DateTime @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@map("survey_responses")
+}
+
+/// 복용약 (자유 입력). MVP에서는 약물에 대한 판단을 하지 않는다.
+model Medication {
+  id           String   @id @default(cuid())
+  assessmentId String
+  name         String
+  purpose      String?
+  frequency    String?
+  /// 향후 의약품 DB 연동용 (MVP 미사용)
+  drugCode     String?
+  createdAt    DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+  @@map("medications")
+}
+
+// ─────────────────────────────── 분석 결과 ───────────────────────────────
+
+/// Rule Engine 결과(결정적)와 LLM 설명을 분리 저장한다.
+model AnalysisResult {
+  assessmentId  String   @id
+  /// 예: "rules-v1"
+  engineVersion String
+  /// 정규화된 입력의 SHA-256 — 같은 입력이면 같은 결과임을 확인하는 데 사용
+  inputHash     String
+  /// DomainResult[]
+  domains       Json
+  /// PriorityItem[] (TOP 3)
+  priorities    Json
+  /// LLM 설명 문구. 없으면 템플릿 문구를 사용한다.
+  narrative     Json?
+  llmModel      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([inputHash])
+  @@map("analysis_results")
+}
+
+// ─────────────────────────────── 12주 건강관리 ───────────────────────────────
+
+model CarePlan {
+  id           String   @id @default(cuid())
+  assessmentId String   @unique
+  startDate    DateTime @db.Date
+  createdAt    DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  weeks      PlanWeek[]
+
+  @@map("care_plans")
+}
+
+model PlanWeek {
+  id         String    @id @default(cuid())
+  planId     String
+  /// 1..12
+  weekNumber Int
+  phase      PlanPhase
+  goal       String
+  /// string[]
+  actions    Json
+  /// { id: string, label: string }[]
+  checks     Json
+  /// LLM 코칭 메시지 (없으면 템플릿)
+  coaching   String?
+
+  plan     CarePlan        @relation(fields: [planId], references: [id], onDelete: Cascade)
+  checkIns WeeklyCheckIn[]
+
+  @@unique([planId, weekNumber])
+  @@map("plan_weeks")
+}
+
+/// 1~4주 기초 생활습관 / 5~8주 운동·식습관 / 9~12주 유지·변화 평가
+enum PlanPhase {
+  FOUNDATION
+  ACTIVATION
+  MAINTENANCE
+}
+
+model WeeklyCheckIn {
+  id        String   @id @default(cuid())
+  weekId    String
+  /// { [checkId]: boolean }
+  completed Json
+  /// 선택 입력 — "최근 변화" 표시용
+  weight    Decimal? @db.Decimal(5, 1)
+  note      String?
+  createdAt DateTime @default(now())
+
+  week PlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  @@index([weekId, createdAt])
+  @@map("weekly_check_ins")
 }

@@ -98,6 +98,13 @@ Landing ─▶ 서비스 소개 ─▶ [내 건강 분석하기]
 
 ## 4. Database Schema (Prisma 초안)
 
+> **구현 기준(STEP 3)**: 실제 스키마는 [`prisma/schema.prisma`](../prisma/schema.prisma)가 기준입니다. 아래 초안 대비 변경점:
+>
+> - `Session`은 원본 토큰 대신 `tokenHash`(SHA-256)만 저장
+> - 모든 테이블에 snake_case 테이블명(`@@map`), 조회용 인덱스, `updatedAt` 추가
+> - 모든 하위 데이터는 `onDelete: Cascade` → 사용자 삭제 시 건강정보 일괄 삭제
+> - 지표 메타데이터(한글명·단위·입력 허용 범위·쉬운 설명)는 `src/domain/health-snapshot/metrics.ts`
+
 설계 원칙
 
 - **최소수집**: 이름은 표시용 닉네임 허용, 생년월일은 연령 계산용(향후 출생연도만 저장 검토), 주민번호·주소·전화번호 수집 안 함.

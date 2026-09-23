@@ -15,6 +15,7 @@ Next.js (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma · Zo
 ```bash
 cp .env.example .env        # 값 채우기 (SESSION_SECRET 등)
 npm install                 # postinstall 에서 prisma generate 실행
+npm run db:migrate          # 로컬 PostgreSQL에 테이블 생성
 npm run dev                 # http://localhost:3000
 ```
 
@@ -33,7 +34,7 @@ npm run dev                 # http://localhost:3000
 - [x] 설계 승인
 - [x] STEP 1 프로젝트 셋업
 - [x] STEP 2 페이지 구조
-- [ ] STEP 3 DB Schema
+- [x] STEP 3 DB Schema
 - [ ] STEP 4 UI 구현
 - [ ] STEP 5 샘플 데이터
 - [ ] STEP 6 Rule-based Health Analysis Engine
