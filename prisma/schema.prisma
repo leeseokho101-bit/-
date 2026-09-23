@@ -10,9 +10,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL: 앱이 쓰는 연결 (Neon은 pooled 연결 문자열)
+// DIRECT_URL  : 마이그레이션용 직접 연결 (Neon은 direct 연결 문자열, 로컬은 DATABASE_URL과 같게)
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────── 사용자 · 인증 ───────────────────────────────

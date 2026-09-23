@@ -31,6 +31,7 @@ jobs:
     # CI 전용 값 (실제 비밀값 아님). LLM 키가 없으므로 템플릿 설명으로 테스트한다.
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/health_mvp?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/health_mvp?schema=public
       SESSION_SECRET: ci-only-session-secret-not-used-in-production-000
       NEXT_TELEMETRY_DISABLED: "1"
 

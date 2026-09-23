@@ -19,7 +19,9 @@
     "postinstall": "prisma generate",
     "test:db": "vitest run --config vitest.db.config.mts",
     "db:reset": "prisma migrate reset --force",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "vercel-build": "prisma migrate deploy && next build",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

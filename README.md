@@ -7,6 +7,7 @@
 - 개인정보·법규 검토: [`docs/PRIVACY_AND_COMPLIANCE.md`](docs/PRIVACY_AND_COMPLIANCE.md)
 - 분석 규칙 기준(초안, 의료 자문 필요): [`docs/RULES_REFERENCE.md`](docs/RULES_REFERENCE.md)
 - 보안·개인정보 점검 결과: [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md)
+- 배포 안내 (Vercel + Neon): [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 
 ## 기술 스택
 
@@ -73,6 +74,6 @@ GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄�
 - [x] STEP 8 결과 Dashboard
 - [x] STEP 9 12주 건강관리
 - [x] STEP 10 테스트
-- [ ] STEP 11 배포
+- [ ] STEP 11 배포 (준비 완료 — Vercel·Neon 연결 대기, docs/DEPLOYMENT.md)
 
 > ⚠️ 본 서비스는 의료행위(진단·처방)를 하지 않습니다. 결과는 건강관리 참고용입니다.

@@ -17,7 +17,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["src/server/logger.ts", "prisma/seed/**"],
+    files: ["src/server/logger.ts", "prisma/seed/**", "scripts/**"],
     rules: { "no-console": "off" },
   },
   // Override default ignores of eslint-config-next.

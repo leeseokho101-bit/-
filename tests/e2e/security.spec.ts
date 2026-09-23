@@ -36,6 +36,14 @@ test.describe("보안·개인정보", () => {
     }
   });
 
+  test("상태 점검 API는 DB 연결만 알려주고 개인정보를 담지 않는다", async ({
+    request,
+  }) => {
+    const res = await request.get("/api/health");
+    expect(res.status()).toBe(200);
+    expect(await res.json()).toEqual({ status: "ok", db: "ok" });
+  });
+
   test("개발용 샘플 화면은 production에서 존재하지 않는다", async ({
     request,
   }) => {
