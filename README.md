@@ -19,6 +19,19 @@ npm run db:migrate          # 로컬 PostgreSQL에 테이블 생성
 npm run dev                 # http://localhost:3000
 ```
 
+## 가상 사용자 (개발 전용)
+
+`npm run db:seed` 또는 개발 서버의 `/dev/samples` 화면에서 가상 사용자 A~E를 불러옵니다.
+모든 데이터는 가상이며, production에서는 이 기능이 비활성화됩니다. (`src/dev/samples.ts`)
+
+| 사용자 | 특징                                  |
+| ------ | ------------------------------------- |
+| A      | 건강상태 양호                         |
+| B      | 체중관리 중심                         |
+| C      | 혈당관리 중심                         |
+| D      | 생활습관 중심 (일부 검진 항목 미입력) |
+| E      | 복합적인 건강관리 필요                |
+
 ## 스크립트
 
 | 명령                 | 설명                                                |
@@ -36,7 +49,7 @@ npm run dev                 # http://localhost:3000
 - [x] STEP 2 페이지 구조
 - [x] STEP 3 DB Schema
 - [x] STEP 4 UI 구현
-- [ ] STEP 5 샘플 데이터
+- [x] STEP 5 샘플 데이터
 - [ ] STEP 6 Rule-based Health Analysis Engine
 - [ ] STEP 7 AI 연동
 - [ ] STEP 8 결과 Dashboard

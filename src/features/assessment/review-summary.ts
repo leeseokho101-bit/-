@@ -153,12 +153,27 @@ export function buildReviewSummary(i: AssessmentInputs): SummarySection[] {
             ? frequencyLabels[s.alcohol.frequency]
             : null,
         },
-        { label: "1회 음주량", value: v(s.alcohol.drinksPerOccasion, "잔") },
+        // 음주 "안 함"이면 음주량, 현재 흡연이 아니면 흡연량 문항은 해당 없음
+        ...(s.alcohol.frequency === "NEVER"
+          ? []
+          : [
+              {
+                label: "1회 음주량",
+                value: v(s.alcohol.drinksPerOccasion, "잔"),
+              },
+            ]),
         {
           label: "흡연",
           value: s.smoking.status ? smokingLabels[s.smoking.status] : null,
         },
-        { label: "하루 흡연량", value: v(s.smoking.cigarettesPerDay, "개비") },
+        ...(s.smoking.status === "CURRENT"
+          ? [
+              {
+                label: "하루 흡연량",
+                value: v(s.smoking.cigarettesPerDay, "개비"),
+              },
+            ]
+          : []),
         {
           label: "스트레스",
           value: s.stress.level ? scaleLabels.stress[s.stress.level - 1] : null,
