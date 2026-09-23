@@ -31,9 +31,18 @@ const steps = [
   "우선순위와 12주 계획 확인",
 ];
 
-export default function LandingPage() {
+export default async function LandingPage({ searchParams }: PageProps<"/">) {
+  const { deleted } = await searchParams;
   return (
     <PageContainer>
+      {deleted === "1" && (
+        <p
+          role="status"
+          className="border-border bg-surface rounded-xl border px-4 py-3 text-sm"
+        >
+          ✓ 계정과 모든 건강정보가 삭제되었어요.
+        </p>
+      )}
       <section className="flex flex-col gap-5 pt-4">
         <p className="text-primary text-sm font-semibold">입체적 건강분석</p>
         <h1 className="text-3xl leading-snug font-bold">

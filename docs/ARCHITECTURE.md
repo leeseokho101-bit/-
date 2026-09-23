@@ -104,6 +104,7 @@ Landing ─▶ 서비스 소개 ─▶ [내 건강 분석하기]
 > - 모든 테이블에 snake_case 테이블명(`@@map`), 조회용 인덱스, `updatedAt` 추가
 > - 모든 하위 데이터는 `onDelete: Cascade` → 사용자 삭제 시 건강정보 일괄 삭제
 > - 지표 메타데이터(한글명·단위·입력 허용 범위·쉬운 설명)는 `src/domain/health-snapshot/metrics.ts`
+> - (STEP 8) 마이페이지 "내 데이터 전체 삭제"는 soft delete 대신 **즉시 삭제**(사용자 행 삭제 → 모든 건강정보 cascade 삭제). `deletedAt` 필드는 향후 탈퇴 유예 정책용으로 남겨 둠
 
 설계 원칙
 

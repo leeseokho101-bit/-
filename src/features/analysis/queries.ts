@@ -20,6 +20,7 @@ export type ReportData = {
   priorities: PriorityItem[];
   dataGaps: AnalysisOutput["dataGaps"];
   narrative: Narrative;
+  sex: "MALE" | "FEMALE";
 };
 
 /** 사용자의 가장 최근 분석 결과 (본인 것만 조회) */
@@ -70,5 +71,46 @@ export async function getLatestReport(
     priorities: output.priorities,
     dataGaps: output.dataGaps,
     narrative,
+    sex: a.user.profile?.sex ?? "MALE",
   };
+}
+
+export type ReportHistoryItem = {
+  assessmentId: string;
+  analyzedAt: Date;
+  checkupDate: Date | null;
+  topDomains: PriorityItem["domain"][];
+  managementNeeded: number;
+};
+
+/** 분석 이력 (최근 순) — 요약 정보만 */
+export async function getReportHistory(
+  userId: string,
+  take = 10,
+): Promise<ReportHistoryItem[]> {
+  const rows = await db.assessment.findMany({
+    where: { userId, status: "ANALYZED", result: { isNot: null } },
+    orderBy: { submittedAt: "desc" },
+    take,
+    select: {
+      id: true,
+      submittedAt: true,
+      checkupDate: true,
+      result: { select: { domains: true, priorities: true, updatedAt: true } },
+    },
+  });
+  return rows.map((r) => {
+    const domains = r.result!.domains as unknown as DomainResult[];
+    const priorities = r.result!.priorities as unknown as PriorityItem[];
+    return {
+      assessmentId: r.id,
+      analyzedAt: r.submittedAt ?? r.result!.updatedAt,
+      checkupDate: r.checkupDate,
+      topDomains: priorities
+        .filter((p) => p.mode === "IMPROVE")
+        .map((p) => p.domain),
+      managementNeeded: domains.filter((d) => d.status === "MANAGEMENT_NEEDED")
+        .length,
+    };
+  });
 }
