@@ -3,7 +3,18 @@
 > 실제 서비스 전환 전 `docs/PRIVACY_AND_COMPLIANCE.md`, `docs/SECURITY_REVIEW.md`의 남은 항목을 먼저 검토하세요.
 > 이 안내의 계정 연결·비밀값 입력은 서비스 소유자가 직접 진행합니다. 비밀값은 채팅·코드·이슈에 붙여 넣지 마세요.
 
-## 1. Neon (PostgreSQL)
+## 0. 가장 쉬운 방법 — Vercel Storage에서 Neon 연결
+
+1. Vercel 프로젝트 → **Storage → Create Database → Neon** → 이 프로젝트에 **Connect**
+2. 연동이 `DATABASE_URL`(pooled)·`DATABASE_URL_UNPOOLED`(direct) 등을 자동으로 넣습니다.
+   앱과 배포 빌드는 이 이름들을 자동으로 인식하므로 `DIRECT_URL`을 따로 넣지 않아도 됩니다.
+   (인식 순서: `scripts/db-env.mjs` — 앱 `DATABASE_URL → POSTGRES_PRISMA_URL → POSTGRES_URL`, 마이그레이션 `DIRECT_URL → DATABASE_URL_UNPOOLED → POSTGRES_URL_NON_POOLING`)
+3. 연결할 때 "이미 있는 변수" 오류가 나면, **비어 있는** `DATABASE_URL`·`DIRECT_URL`을 Settings → Environment Variables에서 삭제한 뒤 다시 연결하세요.
+4. `SESSION_SECRET`(32자 이상)이 설정되어 있는지 확인 → **Redeploy**
+
+빌드 로그 첫 부분에 환경변수 점검 결과가 `✓`/`✗`로 표시됩니다 (값은 출력되지 않음).
+
+## 1. Neon (PostgreSQL) — 직접 만드는 경우
 
 1. [Neon](https://neon.tech)에서 프로젝트 생성
    - **리전**: 사용자와 가까운 리전을 고르세요. 해외 리전이면 개인정보 국외이전 고지·동의 검토가 필요합니다.
@@ -17,7 +28,7 @@
 ## 2. Vercel
 
 1. [Vercel](https://vercel.com) → **Add New… → Project** → GitHub 저장소 `leeseokho101-bit/-` 선택
-2. Framework: Next.js (자동 인식). Build Command는 비워 두면 `package.json`의 **`vercel-build`**(`prisma migrate deploy && next build`)가 사용됩니다.
+2. Framework: Next.js (자동 인식). Build Command는 비워 두면 `package.json`의 **`vercel-build`**(`scripts/deploy-build.mjs`: 환경변수 점검 → `prisma migrate deploy` → `next build`)가 사용됩니다.
 3. **Settings → Functions → Region**: Neon DB와 같은(가까운) 리전으로 설정 (지연 시간)
 4. **Settings → Environment Variables** (Production / Preview 각각)
 
