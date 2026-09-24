@@ -33,6 +33,30 @@ const cases: [
     "u",
   ],
   ["direct가 없으면 앱 연결 사용", { DATABASE_URL: "only" }, "only", "only"],
+  [
+    "연동 접두사(h1_) — 기존 빈 변수가 있어도 인식",
+    {
+      DATABASE_URL: "",
+      DIRECT_URL: "",
+      h1_DATABASE_URL: "pooled",
+      h1_DATABASE_URL_UNPOOLED: "direct",
+    },
+    "pooled",
+    "direct",
+  ],
+  [
+    "접두사 없는 이름이 우선",
+    { DATABASE_URL: "main", h1_DATABASE_URL: "other", DIRECT_URL: "d" },
+    "main",
+    "d",
+  ],
+  // 비슷한 이름이지만 접두사 규칙이 아닌 것은 무시 (예: MY_APP_DATABASE_URL 의 접두사는 MY_APP)
+  [
+    "밑줄이 든 접두사는 무시",
+    { MY_APP_DATABASE_URL: "x" },
+    undefined,
+    undefined,
+  ],
 ];
 
 describe("DB 연결 문자열 결정", () => {
