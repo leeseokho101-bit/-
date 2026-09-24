@@ -9,7 +9,7 @@
 2. 연동이 `DATABASE_URL`(pooled)·`DATABASE_URL_UNPOOLED`(direct) 등을 자동으로 넣습니다.
    앱과 배포 빌드는 이 이름들을 자동으로 인식하므로 `DIRECT_URL`을 따로 넣지 않아도 됩니다.
    (인식 순서: `scripts/db-env.mjs` — 앱 `DATABASE_URL → POSTGRES_PRISMA_URL → POSTGRES_URL`, 마이그레이션 `DIRECT_URL → DATABASE_URL_UNPOOLED → POSTGRES_URL_NON_POOLING`)
-3. 연결할 때 "이미 있는 변수" 오류가 나면, **비어 있는** `DATABASE_URL`·`DIRECT_URL`을 Settings → Environment Variables에서 삭제한 뒤 다시 연결하세요.
+3. 연결할 때 접두사(예: `h1_`)를 붙여 연결해도 됩니다 — `h1_DATABASE_URL`처럼 **접두사가 붙은 이름도 자동 인식**합니다. 또는 "이미 있는 변수" 오류가 나면, **비어 있는** `DATABASE_URL`·`DIRECT_URL`을 Settings → Environment Variables에서 삭제한 뒤 다시 연결하세요.
 4. `SESSION_SECRET`(32자 이상)이 설정되어 있는지 확인 → **Redeploy**
 
 빌드 로그 첫 부분에 환경변수 점검 결과가 `✓`/`✗`로 표시됩니다 (값은 출력되지 않음).
