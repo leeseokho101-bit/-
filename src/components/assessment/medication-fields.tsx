@@ -3,20 +3,38 @@
 import { useState } from "react";
 import { inputClass } from "@/components/form/field";
 import { useFieldState, useFormValues } from "@/components/form/step-form";
+import {
+  DAILY_TABLETS_RANGE,
+  productOptionGroups,
+} from "@/domain/medication/catalog";
 
-type Row = { key: number; name?: string; purpose?: string; frequency?: string };
+type Row = {
+  key: number;
+  name?: string;
+  purpose?: string;
+  frequency?: string;
+  drugCode?: string;
+  dailyTablets?: string;
+};
+
+const optionGroups = productOptionGroups();
+const FIELDS = [
+  "name",
+  "purpose",
+  "frequency",
+  "drugCode",
+  "dailyTablets",
+] as const;
 
 const MAX_ROWS = 20;
 
 function initialRows(values: Record<string, string>): Row[] {
   const rows: Row[] = [];
   for (let i = 0; i < MAX_ROWS; i++) {
-    const name = values[`meds.${i}.name`];
-    const purpose = values[`meds.${i}.purpose`];
-    const frequency = values[`meds.${i}.frequency`];
-    if (name === undefined && purpose === undefined && frequency === undefined)
-      break;
-    rows.push({ key: i, name, purpose, frequency });
+    const row: Row = { key: i };
+    for (const f of FIELDS) row[f] = values[`meds.${i}.${f}`];
+    if (FIELDS.every((f) => row[f] === undefined)) break;
+    rows.push(row);
   }
   return rows.length ? rows : [{ key: 0 }];
 }
@@ -107,6 +125,7 @@ export function MedicationFields() {
                   </div>
                 );
               })}
+              <DoseFields row={row} index={i} />
             </fieldset>
           ))}
           {rows.length < MAX_ROWS && (
@@ -119,6 +138,73 @@ export function MedicationFields() {
             </button>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+/** 혈압약·당뇨약·고지혈증약: 성분·함량 + 하루 복용 알 수 (생체나이 보정용) */
+function DoseFields({ row, index }: { row: Row; index: number }) {
+  const [drugCode, setDrugCode] = useState(row.drugCode ?? "");
+  const codeName = `meds.${index}.drugCode`;
+  const tabletsName = `meds.${index}.dailyTablets`;
+  const codeId = `med-${row.key}-drugCode`;
+  const tabletsId = `med-${row.key}-dailyTablets`;
+  return (
+    <div className="bg-background flex flex-col gap-3 rounded-xl p-3">
+      <p className="text-muted text-xs leading-relaxed">
+        혈압약·당뇨약·고지혈증약이라면 성분과 1정당 함량을 골라 주세요. 복합제는
+        성분별로 나눠 계산합니다. 모르면 비워 두셔도 돼요.
+      </p>
+      <div className="flex flex-col gap-1">
+        <label htmlFor={codeId} className="text-sm font-medium">
+          성분·함량 (선택)
+        </label>
+        <select
+          id={codeId}
+          name={codeName}
+          value={drugCode}
+          onChange={(e) => setDrugCode(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">해당 없음 / 모름</option>
+          {optionGroups.map((g) => (
+            <optgroup key={g.therapy} label={g.label}>
+              {g.products.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <RowError name={codeName} />
+      </div>
+      {drugCode && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor={tabletsId} className="text-sm font-medium">
+            하루 복용 알 수
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id={tabletsId}
+              name={tabletsName}
+              type="text"
+              inputMode="decimal"
+              defaultValue={row.dailyTablets ?? "1"}
+              placeholder="예: 1, 0.5, 2"
+              className={inputClass}
+              autoComplete="off"
+              aria-describedby={`${tabletsId}-help`}
+            />
+            <span className="text-muted shrink-0 text-sm">알</span>
+          </div>
+          <p id={`${tabletsId}-help`} className="text-muted text-xs">
+            하루에 먹는 전체 알 수예요. 반 알은 0.5로 적어 주세요. (
+            {DAILY_TABLETS_RANGE.min}~{DAILY_TABLETS_RANGE.max}알)
+          </p>
+          <RowError name={tabletsName} />
+        </div>
       )}
     </div>
   );

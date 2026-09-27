@@ -7,6 +7,7 @@ import {
   frequencyLabels,
   smokingLabels,
 } from "@/domain/health-snapshot/survey";
+import { findProduct } from "@/domain/medication/catalog";
 import type { AssessmentStepSlug } from "@/lib/routes";
 import type { AssessmentInputs } from "./queries";
 
@@ -188,7 +189,15 @@ export function buildReviewSummary(i: AssessmentInputs): SummarySection[] {
         : i.medications.length
           ? i.medications.map((m, idx) => ({
               label: `약 ${idx + 1}`,
-              value: [m.name, m.purpose, m.frequency]
+              value: [
+                m.name,
+                findProduct(m.drugCode)?.label,
+                m.drugCode && m.dailyTablets !== null
+                  ? `하루 ${m.dailyTablets}알`
+                  : null,
+                m.purpose,
+                m.frequency,
+              ]
                 .filter(Boolean)
                 .join(" · "),
             }))

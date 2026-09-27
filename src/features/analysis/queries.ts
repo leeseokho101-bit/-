@@ -5,6 +5,7 @@ import type {
   DomainResult,
   PriorityItem,
 } from "@/domain/analysis/types";
+import type { BioAgeResult } from "@/domain/bio-age/types";
 import { buildNarrativeInput } from "@/domain/narrative/input";
 import { buildTemplateNarrative } from "@/domain/narrative/templates";
 import type { Narrative } from "@/domain/narrative/types";
@@ -21,6 +22,8 @@ export type ReportData = {
   dataGaps: AnalysisOutput["dataGaps"];
   narrative: Narrative;
   sex: "MALE" | "FEMALE";
+  /** 생체나이 (생체나이 기능 이전에 분석한 결과에는 없다) */
+  bioAge: BioAgeResult | null;
 };
 
 /** 사용자의 가장 최근 분석 결과 (본인 것만 조회) */
@@ -42,6 +45,7 @@ export async function getLatestReport(
           domains: true,
           priorities: true,
           narrative: true,
+          bioAge: true,
           updatedAt: true,
         },
       },
@@ -72,6 +76,7 @@ export async function getLatestReport(
     dataGaps: output.dataGaps,
     narrative,
     sex: a.user.profile?.sex ?? "MALE",
+    bioAge: (a.result.bioAge as unknown as BioAgeResult | null) ?? null,
   };
 }
 
