@@ -9,6 +9,8 @@ import type {
   OrganAge,
   OrganCode,
 } from "@/domain/bio-age/types";
+import { NHIS_REFERENCE } from "@/domain/bio-age/rules/nhis-reference.generated";
+import { references } from "@/domain/bio-age/rules/reference";
 import { THERAPY_LABELS, type Therapy } from "@/domain/medication/catalog";
 
 export const organContent: Record<
@@ -163,3 +165,14 @@ export function projectionText(result: BioAgeResult): {
 
 export const bioAgeDisclaimer =
   "생체나이는 같은 성별·나이의 평균 수치와 비교해 나이로 바꿔 본 참고 지표이며 의학적 진단이 아닙니다. 약 보정은 임상연구의 평균 효과를 적용한 추정으로 개인마다 다를 수 있고, 약 복용·변경은 반드시 의료진과 상의해 주세요.";
+
+/** 생체나이 기준 평균의 출처 안내 */
+export function referenceSourceText(): string {
+  if (!NHIS_REFERENCE)
+    return "기준 평균: 국민건강영양조사·국민건강보험공단 통계 요약값을 단순화한 초안";
+  const drafts = Object.values(references).some(
+    (r) =>
+      r.curves.MALE.source === "DRAFT" || r.curves.FEMALE.source === "DRAFT",
+  );
+  return `기준 평균: 국민건강보험공단 건강검진정보 ${NHIS_REFERENCE.years.join("·")}년 (수검자 ${NHIS_REFERENCE.rows.toLocaleString("ko-KR")}명)${drafts ? ", 당화혈색소 등 원자료에 없는 항목은 국민건강영양조사 요약값" : ""}`;
+}

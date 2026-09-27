@@ -21,7 +21,8 @@
     "db:reset": "prisma migrate reset --force",
     "test:e2e": "playwright test",
     "vercel-build": "node scripts/deploy-build.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "bioage:reference": "tsx --tsconfig tsconfig.json scripts/bio-age-reference/build.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

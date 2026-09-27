@@ -23,6 +23,7 @@ import {
   PROJECTION,
   referenceMean,
   references,
+  referenceSpread,
   UNFAVORABLE_CAP_YEARS,
   type ReferenceMetric,
 } from "./rules/reference";
@@ -93,7 +94,7 @@ export function metricGapYears(
 ): number {
   const ref = references[metric];
   const mean = referenceMean(metric, sex, age);
-  const spread = ref.spread[sex];
+  const spread = referenceSpread(metric, sex, age);
   const z =
     ref.scale === "LOG"
       ? Math.log(value / mean) / Math.log(spread)
