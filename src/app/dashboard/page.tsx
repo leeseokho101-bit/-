@@ -12,6 +12,7 @@ import { WeightTile } from "@/components/charts/weight-tile";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { LevelDots, StatusBadge } from "@/components/ui/status-badge";
+import { formatAge, formatGap, organContent } from "@/content/bio-age";
 import { domainContent } from "@/content/domains";
 import { buildKeyMetrics } from "@/features/analysis/key-metrics";
 import { getLatestReport } from "@/features/analysis/queries";
@@ -86,6 +87,41 @@ export default async function DashboardPage() {
         domains={report.domains}
         summary={report.narrative.summary}
       />
+
+      {/* 생체나이 */}
+      {report.bioAge?.overall && (
+        <section className="flex flex-col gap-3">
+          <SectionTitle title="나의 생체나이" href={routes.reportBioAge} />
+          <Card className="flex flex-col gap-3">
+            <p className="flex flex-wrap items-baseline gap-2">
+              <span className="text-muted text-sm">
+                실제 {report.bioAge.chronologicalAge}세 → 종합
+              </span>
+              <span className="text-2xl font-bold">
+                {formatAge(report.bioAge.overall.age)}
+              </span>
+              <span className="font-semibold">
+                ({formatGap(report.bioAge.overall.gap)})
+              </span>
+            </p>
+            <ul className="grid grid-cols-2 gap-2 text-sm">
+              {report.bioAge.organs
+                .filter((o) => o.adjustedGap !== null)
+                .map((o) => (
+                  <li
+                    key={o.organ}
+                    className="bg-background flex justify-between rounded-lg px-3 py-2"
+                  >
+                    <span>{organContent[o.organ].label}</span>
+                    <span className="font-semibold">
+                      {formatGap(o.adjustedGap!)}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </Card>
+        </section>
+      )}
 
       {/* 2. 나의 건강 프로파일 */}
       <section className="flex flex-col gap-3">

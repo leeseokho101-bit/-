@@ -5,6 +5,12 @@ import {
   type MetricCode,
 } from "@/domain/health-snapshot/metrics";
 import { FREQUENCIES, SMOKING_STATUSES } from "@/domain/health-snapshot/survey";
+import {
+  DAILY_TABLETS_RANGE,
+  findProduct,
+  productTherapies,
+  THERAPY_PURPOSES,
+} from "@/domain/medication/catalog";
 import { yesNo } from "./form-data";
 
 /** 선택 입력 숫자: 비어 있으면 undefined, 범위 밖이면 친절한 오류 */
@@ -176,6 +182,16 @@ export const medicationsFormSchema = z
           name: medText(50).optional(),
           purpose: medText(50).optional(),
           frequency: medText(30).optional(),
+          drugCode: z
+            .string()
+            .refine(
+              (v) => !!findProduct(v),
+              "목록에서 성분·함량을 골라 주세요.",
+            )
+            .optional(),
+          dailyTablets: num(DAILY_TABLETS_RANGE.min, DAILY_TABLETS_RANGE.max, {
+            unit: "알",
+          }).optional(),
         }),
       )
       .max(20, "최대 20개까지 입력할 수 있습니다.")
@@ -183,6 +199,24 @@ export const medicationsFormSchema = z
   })
   .transform((d) => ({
     none: d.none === true,
-    // 약 이름이 없는 행은 무시
-    meds: d.none ? [] : d.meds.filter((m) => m.name),
+    // 약 이름이 없는 행은 무시. 성분을 골랐는데 목적이 비어 있으면 성분의 목적으로 채운다
+    meds: d.none
+      ? []
+      : d.meds
+          .filter((m) => m.name)
+          .map((m) => {
+            const product = findProduct(m.drugCode);
+            return {
+              ...m,
+              purpose:
+                m.purpose ||
+                (product
+                  ? productTherapies(product)
+                      .map((t) => THERAPY_PURPOSES[t])
+                      .join(", ")
+                  : undefined),
+              // 알 수는 성분을 골랐을 때만 의미가 있다 (기본 1알)
+              dailyTablets: product ? (m.dailyTablets ?? 1) : undefined,
+            };
+          }),
   }));

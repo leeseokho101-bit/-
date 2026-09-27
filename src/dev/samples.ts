@@ -19,7 +19,14 @@ export type SampleUser = {
   checkupDate: string;
   metrics: Partial<Record<Exclude<MetricCode, "BMI">, number>>;
   survey: SurveyAnswers;
-  medications: { name: string; purpose?: string; frequency?: string }[];
+  medications: {
+    name: string;
+    purpose?: string;
+    frequency?: string;
+    /** 성분·함량 코드 (src/domain/medication/catalog.ts) */
+    drugCode?: string;
+    dailyTablets?: number;
+  }[];
   /** 분석 엔진이 우선순위 상위에 올려야 할 영역 (STEP 6 테스트 기준) */
   expectedFocus: DomainCode[];
 };
@@ -53,6 +60,7 @@ export const sampleUsers: SampleUser[] = [
       GGT: 24,
       CREATININE: 0.92,
       EGFR: 98,
+      HEMOGLOBIN: 15.3,
     },
     survey: {
       exercise: {
@@ -109,6 +117,7 @@ export const sampleUsers: SampleUser[] = [
       GGT: 28,
       CREATININE: 0.72,
       EGFR: 94,
+      HEMOGLOBIN: 12.4,
     },
     survey: {
       exercise: {
@@ -165,6 +174,7 @@ export const sampleUsers: SampleUser[] = [
       GGT: 38,
       CREATININE: 1.0,
       EGFR: 84,
+      HEMOGLOBIN: 14.8,
     },
     survey: {
       exercise: {
@@ -221,6 +231,7 @@ export const sampleUsers: SampleUser[] = [
       AST: 20,
       ALT: 16,
       GGT: 22,
+      HEMOGLOBIN: 11.8,
       // HbA1c, 크레아티닌, eGFR 미입력 → 데이터 부족 처리 확인용
     },
     survey: {
@@ -279,6 +290,7 @@ export const sampleUsers: SampleUser[] = [
       GGT: 96,
       CREATININE: 1.28,
       EGFR: 58,
+      HEMOGLOBIN: 13.6,
     },
     survey: {
       exercise: {
@@ -308,11 +320,26 @@ export const sampleUsers: SampleUser[] = [
       medicationsNone: false,
     },
     medications: [
-      { name: "가상 혈압약", purpose: "혈압", frequency: "하루 1회 아침" },
+      {
+        name: "가상 혈압약",
+        purpose: "혈압",
+        frequency: "하루 1회 아침",
+        drugCode: "AMLODIPINE_5+VALSARTAN_80",
+        dailyTablets: 1,
+      },
       {
         name: "가상 콜레스테롤약",
         purpose: "콜레스테롤",
         frequency: "하루 1회 저녁",
+        drugCode: "ROSUVASTATIN_10+EZETIMIBE_10",
+        dailyTablets: 1,
+      },
+      {
+        name: "가상 당뇨약",
+        purpose: "혈당",
+        frequency: "하루 2회 식후",
+        drugCode: "METFORMIN_500",
+        dailyTablets: 2,
       },
     ],
     expectedFocus: [

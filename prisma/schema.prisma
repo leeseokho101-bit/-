@@ -139,6 +139,7 @@ enum MetricCode {
   GGT
   CREATININE
   EGFR
+  HEMOGLOBIN
 }
 
 /// 데이터 출처. MVP는 MANUAL만 사용하고 나머지는 향후 확장용.
@@ -169,8 +170,10 @@ model Medication {
   name         String
   purpose      String?
   frequency    String?
-  /// 향후 의약품 DB 연동용 (MVP 미사용)
+  /// 성분·함량 카탈로그 코드 (src/domain/medication/catalog.ts). 복합제는 단일 성분으로 나눠 계산한다.
   drugCode     String?
+  /// 하루 복용 알 수 (예: 1, 0.5, 2) — drugCode와 함께 하루 성분 용량 계산에 사용
+  dailyTablets Decimal? @db.Decimal(4, 1)
   createdAt    DateTime @default(now())
 
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
@@ -192,6 +195,8 @@ model AnalysisResult {
   domains       Json
   /// PriorityItem[] (TOP 3)
   priorities    Json
+  /// 생체나이 결과 (BioAgeResult, src/domain/bio-age). 이전 분석에는 없을 수 있다.
+  bioAge        Json?
   /// LLM 설명 문구. 없으면 템플릿 문구를 사용한다.
   narrative     Json?
   llmModel      String?

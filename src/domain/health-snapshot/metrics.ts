@@ -21,12 +21,19 @@ export const METRIC_CODES = [
   "GGT",
   "CREATININE",
   "EGFR",
+  "HEMOGLOBIN",
 ] as const;
 
 export type MetricCode = (typeof METRIC_CODES)[number];
 
 export type MetricGroup =
-  "BODY" | "BLOOD_PRESSURE" | "GLUCOSE" | "LIPID" | "LIVER" | "KIDNEY";
+  | "BODY"
+  | "BLOOD_PRESSURE"
+  | "GLUCOSE"
+  | "LIPID"
+  | "LIVER"
+  | "KIDNEY"
+  | "BLOOD";
 
 export type MetricDefinition = {
   code: MetricCode;
@@ -49,6 +56,7 @@ export const METRIC_GROUPS: { group: MetricGroup; label: string }[] = [
   { group: "LIPID", label: "지질(콜레스테롤)" },
   { group: "LIVER", label: "간" },
   { group: "KIDNEY", label: "신장(콩팥)" },
+  { group: "BLOOD", label: "혈액(빈혈)" },
 ];
 
 export const METRICS: Record<MetricCode, MetricDefinition> = {
@@ -205,6 +213,15 @@ export const METRICS: Record<MetricCode, MetricDefinition> = {
     decimals: 0,
     inputRange: { min: 1, max: 200 },
     help: "신장이 노폐물을 걸러내는 능력을 추정한 수치입니다.",
+  },
+  HEMOGLOBIN: {
+    code: "HEMOGLOBIN",
+    group: "BLOOD",
+    label: "혈색소(헤모글로빈)",
+    unit: "g/dL",
+    decimals: 1,
+    inputRange: { min: 3, max: 25 },
+    help: "적혈구 속에서 산소를 나르는 단백질의 양으로, 빈혈 여부를 살펴볼 때 참고합니다.",
   },
 };
 

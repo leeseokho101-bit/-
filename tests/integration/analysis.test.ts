@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { afterAll, describe, expect, it } from "vitest";
 import { sampleUsers } from "@/dev/samples";
 import { resetSampleUser } from "@/dev/seed-sample";
+import { BIO_AGE_VERSION } from "@/domain/bio-age/rules/reference";
+import type { BioAgeResult } from "@/domain/bio-age/types";
 import { runAnalysis } from "@/features/analysis/run";
 
 const db = new PrismaClient();
@@ -53,5 +55,36 @@ describe("runAnalysis (DB)", () => {
     });
     const after = await runAnalysis(db, id);
     expect(after.inputHash).not.toBe(before.inputHash);
+  });
+});
+
+describe("runAnalysis 생체나이 (DB)", () => {
+  const EMAIL_E = "bioage-test@example.invalid";
+  const sampleE = { ...sampleUsers.find((s) => s.id === "E")!, email: EMAIL_E };
+
+  afterAll(async () => {
+    await db.user.deleteMany({ where: { email: EMAIL_E, isSample: true } });
+  });
+
+  it("복용약 성분·알 수를 반영한 생체나이를 함께 저장한다", async () => {
+    const userId = await resetSampleUser(db, sampleE, "scrypt$x$y");
+    const { id } = await db.assessment.findFirstOrThrow({ where: { userId } });
+    await runAnalysis(db, id);
+    const stored = await db.analysisResult.findUniqueOrThrow({
+      where: { assessmentId: id },
+    });
+    const bio = stored.bioAge as unknown as BioAgeResult;
+    expect(bio.version).toBe(BIO_AGE_VERSION);
+    expect(bio.medications.ingredients.map((i) => i.ingredient)).toEqual([
+      "AMLODIPINE",
+      "EZETIMIBE",
+      "METFORMIN",
+      "ROSUVASTATIN",
+      "VALSARTAN",
+    ]);
+    const bp = bio.organs.find((o) => o.organ === "BLOOD_PRESSURE")!;
+    expect(bp.medication).toBe("QUANTIFIED");
+    expect(bp.adjustedGap!).toBeGreaterThan(bp.measuredGap!);
+    expect(bio.organs.find((o) => o.organ === "ANEMIA")!.status).toBe("OK");
   });
 });
