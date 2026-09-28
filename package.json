@@ -45,6 +45,7 @@
     "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^6.19.3",
+    "read-excel-file": "^9.3.10",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",

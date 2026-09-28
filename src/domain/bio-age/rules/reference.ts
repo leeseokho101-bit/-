@@ -2,8 +2,8 @@
  * 생체나이 기준표 — 성별·연령대별 건강검진 지표 평균과 퍼짐 정도
  *
  * 기준 곡선의 출처 (성별·지표마다 따로 정해진다)
- *  - NHIS : 국민건강보험공단 건강검진정보(표본 100만 명) 원자료로 계산한 5세 연령대별 값.
- *           `npm run bioage:reference -- <CSV>` 로 nhis-reference.generated.ts 를 만든다.
+ *  - NHIS : 국민건강보험공단 자료로 만든 값 — 건강검진정보(표본 100만 명) 원자료 CSV 또는
+ *           "한국인 ○○ 참조표준" xlsx. `npm run bioage:reference -- <파일>` 로 nhis-reference.generated.ts 를 만든다.
  *  - DRAFT: 원자료가 없는 지표(당화혈색소 등)나 아직 생성하지 않은 경우의 초안 —
  *           국민건강영양조사(KNHANES)·공단 통계연보 요약값을 10세 간격 대표값으로 단순화.
  *  실제 서비스 전 의료 전문가 검토가 필요하다. 값이 바뀌면 BIO_AGE_VERSION도 바뀐다.
@@ -22,7 +22,7 @@ type Sex = "MALE" | "FEMALE";
 export const DRAFT_AGES = [20, 30, 40, 50, 60, 70, 80] as const;
 
 export const BIO_AGE_VERSION = NHIS_REFERENCE
-  ? `bioage-nhis${NHIS_REFERENCE.years.join("-")}-v1`
+  ? `bioage-nhis${NHIS_REFERENCE.years.join("-") || "ref"}-v1`
   : "bioage-2026.09-v1";
 
 export type Direction = "HIGHER_WORSE" | "LOWER_WORSE";
@@ -67,9 +67,9 @@ export type GeneratedCurve = {
 export type GeneratedReference = {
   /** 원자료 설명 (예: "국민건강보험공단_건강검진정보") */
   source: string;
-  /** 기준년도 */
+  /** 기준년도 (참조표준 파일처럼 표기가 없으면 빈 배열) */
   years: number[];
-  /** 사용한 수검자 수 (성별·연령 코드가 유효한 행) */
+  /** 원자료에서 사용한 수검자 수 (요약표인 참조표준은 0 — 연령대별 수는 곡선의 n) */
   rows: number;
   metrics: Partial<
     Record<ReferenceMetric, Partial<Record<Sex, GeneratedCurve>>>

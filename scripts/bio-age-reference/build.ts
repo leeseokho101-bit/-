@@ -1,13 +1,18 @@
 /**
- * 사용법: npm run bioage:reference -- <건강검진정보.csv> [더 많은 CSV…] [--encoding euc-kr|utf-8] [--min-n 100]
+ * 사용법
+ *  - 원자료:   npm run bioage:reference -- <건강검진정보.csv> [더 많은 CSV…] [--encoding euc-kr|utf-8] [--min-n 100]
+ *  - 참조표준: npm run bioage:reference -- <한국인_○○_참조표준.xlsx> [더 많은 xlsx…] [--year 2021]
  *
- * 공공데이터포털 "국민건강보험공단_건강검진정보" CSV(보통 EUC-KR)를 읽어
+ * 공공데이터포털 "국민건강보험공단_건강검진정보" CSV(보통 EUC-KR) 또는
+ * "국민건강보험공단_한국인 ○○ 참조표준" xlsx를 읽어
  * src/domain/bio-age/rules/nhis-reference.generated.ts 를 다시 만든다.
  * 원자료는 저장소에 커밋하지 않는다 (용량이 크고, 생성 파일만 있으면 된다).
  */
 import { spawnSync } from "node:child_process";
 import { createReadStream, writeFileSync } from "node:fs";
 import { basename } from "node:path";
+import readXlsxFile from "read-excel-file/node";
+import type { GeneratedReference } from "@/domain/bio-age/rules/reference";
 import {
   detectEncoding,
   GENERATED_METRICS,
@@ -15,6 +20,7 @@ import {
   renderGeneratedFile,
   splitCsvLine,
 } from "./aggregate";
+import { parseStandardTable, summarizeStandards } from "./standard";
 
 const DEFAULT_OUT = "src/domain/bio-age/rules/nhis-reference.generated.ts";
 
@@ -23,11 +29,13 @@ function parseArgs(argv: string[]) {
   let encoding: string | undefined;
   let minPerGroup = 100;
   let out = DEFAULT_OUT;
+  const years: number[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--encoding") encoding = argv[++i];
     else if (a === "--min-n") minPerGroup = Number(argv[++i]);
     else if (a === "--out") out = argv[++i];
+    else if (a === "--year") years.push(Number(argv[++i]));
     else files.push(a);
   }
   if (!files.length) {
@@ -36,7 +44,7 @@ function parseArgs(argv: string[]) {
     );
     process.exit(1);
   }
-  return { files, encoding, minPerGroup, out };
+  return { files, encoding, minPerGroup, out, years };
 }
 
 async function* lines(file: string, forced?: string) {
@@ -54,10 +62,11 @@ async function* lines(file: string, forced?: string) {
   if (rest) yield rest;
 }
 
-async function main() {
-  const { files, encoding, minPerGroup, out } = parseArgs(
-    process.argv.slice(2),
-  );
+async function fromRawCsv(
+  files: string[],
+  encoding: string | undefined,
+  minPerGroup: number,
+): Promise<{ ref: GeneratedReference; summary: string }> {
   const acc = new ReferenceAccumulator();
   for (const file of files) {
     let header = true;
@@ -75,17 +84,56 @@ async function main() {
     }
   }
   if (acc.rows === 0) throw new Error("사용할 수 있는 행이 없습니다.");
-
   const ref = acc.summarize({
     source: `국민건강보험공단_건강검진정보 (${files.map((f) => basename(f)).join(", ")})`,
     minPerGroup,
   });
+  return {
+    ref,
+    summary: `기준년도 ${ref.years.join(", ")} · 수검자 ${ref.rows.toLocaleString()}명 (제외 ${acc.skipped.toLocaleString()}행)`,
+  };
+}
+
+async function fromReferenceStandards(
+  files: string[],
+): Promise<{ ref: GeneratedReference; summary: string }> {
+  const records = [];
+  const titles: string[] = [];
+  for (const file of files) {
+    for (const { sheet, data } of await readXlsxFile(file)) {
+      const parsed = parseStandardTable(sheet, data as unknown[][]);
+      console.log(
+        `  ${sheet}: ${parsed.length ? `${parsed.length}행` : "생체나이에 쓰지 않는 항목 → 건너뜀"}`,
+      );
+      if (parsed.length) titles.push(sheet.replace(/^한국인_|_참조표준$/g, ""));
+      records.push(...parsed);
+    }
+  }
+  if (!records.length)
+    throw new Error("사용할 수 있는 참조표준 행이 없습니다.");
+  const ref = summarizeStandards(
+    records,
+    `국민건강보험공단 한국인 참조표준 (${titles.join("·")})`,
+  );
+  return { ref, summary: ref.source };
+}
+
+async function main() {
+  const { files, encoding, minPerGroup, out, years } = parseArgs(
+    process.argv.slice(2),
+  );
+  const xlsx = files.filter((f) => /\.xlsx$/i.test(f));
+  if (xlsx.length && xlsx.length !== files.length)
+    throw new Error("CSV 원자료와 xlsx 참조표준은 따로 실행해 주세요.");
+  const { ref, summary } = xlsx.length
+    ? await fromReferenceStandards(files)
+    : await fromRawCsv(files, encoding, minPerGroup);
+  if (years.length) ref.years = years;
+
   writeFileSync(out, renderGeneratedFile(ref));
   spawnSync("npx", ["prettier", "--write", out], { stdio: "ignore" });
 
-  console.log(
-    `✓ ${out}\n  기준년도 ${ref.years.join(", ")} · 수검자 ${ref.rows.toLocaleString()}명 (제외 ${acc.skipped.toLocaleString()}행)`,
-  );
+  console.log(`✓ ${out}\n  ${summary}`);
   for (const metric of GENERATED_METRICS) {
     const m = ref.metrics[metric];
     const desc = (["MALE", "FEMALE"] as const)

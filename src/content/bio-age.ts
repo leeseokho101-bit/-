@@ -174,5 +174,14 @@ export function referenceSourceText(): string {
     (r) =>
       r.curves.MALE.source === "DRAFT" || r.curves.FEMALE.source === "DRAFT",
   );
-  return `기준 평균: 국민건강보험공단 건강검진정보 ${NHIS_REFERENCE.years.join("·")}년 (수검자 ${NHIS_REFERENCE.rows.toLocaleString("ko-KR")}명)${drafts ? ", 당화혈색소 등 원자료에 없는 항목은 국민건강영양조사 요약값" : ""}`;
+  const year = NHIS_REFERENCE.years.length
+    ? ` ${NHIS_REFERENCE.years.join("·")}년`
+    : "";
+  const count = NHIS_REFERENCE.rows
+    ? ` (수검자 ${NHIS_REFERENCE.rows.toLocaleString("ko-KR")}명)`
+    : "";
+  const base = NHIS_REFERENCE.source.startsWith("국민건강보험공단_건강검진정보")
+    ? `국민건강보험공단 건강검진정보${year}${count}`
+    : `${NHIS_REFERENCE.source}${year}`;
+  return `기준 평균: ${base}${drafts ? ", 자료에 없는 항목은 국민건강영양조사 요약값 기반 초안" : ""}`;
 }

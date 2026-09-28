@@ -229,8 +229,8 @@ const round = (v: number, d: number) => Math.round(v * 10 ** d) / 10 ** d;
 export function renderGeneratedFile(ref: GeneratedReference): string {
   return `/**
  * 자동 생성 파일 — 직접 수정하지 않는다.
- * 국민건강보험공단 건강검진정보 원자료(CSV)로 만든다: \`npm run bioage:reference -- <CSV 경로>\`
- * 원자료: ${ref.source} · 기준년도 ${ref.years.join(", ") || "-"} · 수검자 ${ref.rows.toLocaleString("en-US")}명
+ * 국민건강보험공단 자료(건강검진정보 원자료 CSV 또는 한국인 참조표준 xlsx)로 만든다: \`npm run bioage:reference -- <파일 경로>\`
+ * 원자료: ${ref.source} · 기준년도 ${ref.years.join(", ") || "파일에 표기 없음"}${ref.rows ? ` · 수검자 ${ref.rows.toLocaleString("en-US")}명` : ""}
  */
 import type { GeneratedReference } from "./reference";
 
