@@ -1,9 +1,12 @@
 /**
- * 생체나이 기준표 (초안) — 성별·연령대별 건강검진 지표 평균과 퍼짐 정도
+ * 생체나이 기준표 — 성별·연령대별 건강검진 지표 평균과 퍼짐 정도
  *
- * ⚠️ 국민건강영양조사(KNHANES)·국민건강보험공단 건강검진 통계연보의 공개 요약값을 참고해
- *    10세 간격 대표값으로 단순화한 초안이다. 실제 서비스 전 최신 공단 통계로 교체하고
- *    의료 전문가 검토를 받아야 한다. 값을 바꾸면 BIO_AGE_VERSION을 올린다.
+ * 기준 곡선의 출처 (성별·지표마다 따로 정해진다)
+ *  - NHIS : 국민건강보험공단 자료로 만든 값 — 건강검진정보(표본 100만 명) 원자료 CSV 또는
+ *           "한국인 ○○ 참조표준" xlsx. `npm run bioage:reference -- <파일>` 로 nhis-reference.generated.ts 를 만든다.
+ *  - DRAFT: 원자료가 없는 지표(당화혈색소 등)나 아직 생성하지 않은 경우의 초안 —
+ *           국민건강영양조사(KNHANES)·공단 통계연보 요약값을 10세 간격 대표값으로 단순화.
+ *  실제 서비스 전 의료 전문가 검토가 필요하다. 값이 바뀌면 BIO_AGE_VERSION도 바뀐다.
  *
  * 환산 방식
  *  - z = (내 값 − 같은 성별·나이 평균) / 표준편차   (한쪽으로 치우친 지표는 로그 척도)
@@ -11,27 +14,70 @@
  *  - 좋은 방향은 favorableCapYears, 나쁜 방향은 UNFAVORABLE_CAP_YEARS 까지만 반영
  */
 import type { MetricCode } from "@/domain/health-snapshot/metrics";
+import { NHIS_REFERENCE } from "./nhis-reference.generated";
 
-export const BIO_AGE_VERSION = "bioage-2026.09-v1";
+type Sex = "MALE" | "FEMALE";
 
-/** 평균 기준 나이 (이 사이는 선형 보간, 바깥은 끝값 유지) */
-export const REFERENCE_AGES = [20, 30, 40, 50, 60, 70, 80] as const;
+/** 초안 기준 나이 (10세 간격) */
+export const DRAFT_AGES = [20, 30, 40, 50, 60, 70, 80] as const;
+
+export const BIO_AGE_VERSION = NHIS_REFERENCE
+  ? `bioage-nhis${NHIS_REFERENCE.years.join("-") || "ref"}-v1`
+  : "bioage-2026.09-v1";
 
 export type Direction = "HIGHER_WORSE" | "LOWER_WORSE";
 
+/** 한 성별의 연령별 기준 곡선 (ages 사이는 선형 보간, 바깥은 끝값 유지) */
+export type ReferenceCurve = {
+  ages: readonly number[];
+  /** 평균 (LOG는 기하평균) */
+  mean: readonly number[];
+  /** NORMAL: 표준편차, LOG: 기하표준편차(>1) */
+  spread: readonly number[];
+  source: "NHIS" | "DRAFT";
+  /** 연령대별 표본 수 (NHIS만) */
+  n?: readonly number[];
+};
+
 export type MetricReference = {
   direction: Direction;
-  /** NORMAL: 산술 평균·표준편차 / LOG: 중앙값·기하표준편차(배수) */
+  /** NORMAL: 산술 평균·표준편차 / LOG: 기하평균·기하표준편차(배수) */
   scale: "NORMAL" | "LOG";
-  /** REFERENCE_AGES 순서의 평균(LOG는 중앙값) */
-  mean: { MALE: readonly number[]; FEMALE: readonly number[] };
-  /** NORMAL: 표준편차, LOG: 기하표준편차(>1) */
-  spread: { MALE: number; FEMALE: number };
   /** 표준편차 1만큼 벗어날 때 몇 세로 볼지 */
   yearsPerSd: number;
   /** 좋은 방향으로 벗어날 때 최대 몇 세까지 젊게 볼지 */
   favorableCapYears: number;
+  curves: Record<Sex, ReferenceCurve>;
 };
+
+type DraftReference = Omit<MetricReference, "curves"> & {
+  /** DRAFT_AGES 순서의 평균(LOG는 중앙값) */
+  mean: Record<Sex, readonly number[]>;
+  spread: Record<Sex, number>;
+};
+
+/** 원자료로 만든 곡선 (nhis-reference.generated.ts 형식) */
+export type GeneratedCurve = {
+  ages: number[];
+  mean: number[];
+  spread: number[];
+  n: number[];
+};
+
+export type GeneratedReference = {
+  /** 원자료 설명 (예: "국민건강보험공단_건강검진정보") */
+  source: string;
+  /** 기준년도 (참조표준 파일처럼 표기가 없으면 빈 배열) */
+  years: number[];
+  /** 원자료에서 사용한 수검자 수 (요약표인 참조표준은 0 — 연령대별 수는 곡선의 n) */
+  rows: number;
+  metrics: Partial<
+    Record<ReferenceMetric, Partial<Record<Sex, GeneratedCurve>>>
+  >;
+};
+
+/** 원자료 곡선을 쓰려면 성별마다 최소 이만큼의 연령대가 있어야 한다 */
+export const MIN_GENERATED_POINTS = 4;
 
 /** 나쁜 방향으로 벗어날 때 지표 하나당 최대 반영 나이 */
 export const UNFAVORABLE_CAP_YEARS = 15;
@@ -56,7 +102,7 @@ export type ReferenceMetric = Extract<
   | "WAIST"
 >;
 
-export const references: Record<ReferenceMetric, MetricReference> = {
+export const draftReferences: Record<ReferenceMetric, DraftReference> = {
   SBP: {
     direction: "HIGHER_WORSE",
     scale: "NORMAL",
@@ -213,20 +259,65 @@ export const references: Record<ReferenceMetric, MetricReference> = {
   },
 };
 
-/** 성별·나이의 평균(LOG는 중앙값) — 10세 간격 사이는 선형 보간 */
-export function referenceMean(
-  metric: ReferenceMetric,
-  sex: "MALE" | "FEMALE",
+export function buildReferences(
+  generated: GeneratedReference | null,
+): Record<ReferenceMetric, MetricReference> {
+  const out = {} as Record<ReferenceMetric, MetricReference>;
+  for (const code of Object.keys(draftReferences) as ReferenceMetric[]) {
+    const { mean, spread, ...settings } = draftReferences[code];
+    const curve = (sex: Sex): ReferenceCurve => {
+      const g = generated?.metrics[code]?.[sex];
+      if (g && g.ages.length >= MIN_GENERATED_POINTS)
+        return { ...g, source: "NHIS" };
+      return {
+        ages: DRAFT_AGES,
+        mean: mean[sex],
+        spread: mean[sex].map(() => spread[sex]),
+        source: "DRAFT",
+      };
+    };
+    out[code] = {
+      ...settings,
+      curves: { MALE: curve("MALE"), FEMALE: curve("FEMALE") },
+    };
+  }
+  return out;
+}
+
+export const references = buildReferences(NHIS_REFERENCE);
+
+function interpolate(
+  ages: readonly number[],
+  values: readonly number[],
   age: number,
 ): number {
-  const values = references[metric].mean[sex];
-  const first = REFERENCE_AGES[0];
-  const last = REFERENCE_AGES[REFERENCE_AGES.length - 1];
-  if (age <= first) return values[0];
-  if (age >= last) return values[values.length - 1];
-  const i = Math.floor((age - first) / 10);
-  const t = (age - REFERENCE_AGES[i]) / 10;
+  if (age <= ages[0]) return values[0];
+  const last = ages.length - 1;
+  if (age >= ages[last]) return values[last];
+  let i = 0;
+  while (age > ages[i + 1]) i++;
+  const t = (age - ages[i]) / (ages[i + 1] - ages[i]);
   return values[i] + (values[i + 1] - values[i]) * t;
+}
+
+/** 성별·나이의 평균 (LOG는 기하평균) */
+export function referenceMean(
+  metric: ReferenceMetric,
+  sex: Sex,
+  age: number,
+): number {
+  const c = references[metric].curves[sex];
+  return interpolate(c.ages, c.mean, age);
+}
+
+/** 성별·나이의 표준편차 (LOG는 기하표준편차) */
+export function referenceSpread(
+  metric: ReferenceMetric,
+  sex: Sex,
+  age: number,
+): number {
+  const c = references[metric].curves[sex];
+  return interpolate(c.ages, c.spread, age);
 }
 
 /** 대사증후군 판정 기준 5개 요소 (NCEP-ATP III + 대한비만학회 한국인 허리둘레) */

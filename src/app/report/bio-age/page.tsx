@@ -9,7 +9,7 @@ import { ReportFootnote } from "@/components/report/report-footnote";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { bioAgeDisclaimer } from "@/content/bio-age";
+import { bioAgeDisclaimer, referenceSourceText } from "@/content/bio-age";
 import { getLatestReport } from "@/features/analysis/queries";
 import { routes } from "@/lib/routes";
 import { requireUser } from "@/server/auth/session";
@@ -65,6 +65,8 @@ export default async function BioAgePage() {
       <MedicationBreakdown result={bio} />
       <p className="text-muted bg-surface border-border rounded-xl border p-3 text-xs leading-relaxed">
         {bioAgeDisclaimer}
+        <br />
+        {referenceSourceText()}
       </p>
       <ReportFootnote report={{ ...report, engineVersion: bio.version }} />
     </>
