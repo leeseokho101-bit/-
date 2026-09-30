@@ -30,7 +30,7 @@ function num(
   );
 }
 
-function metricNum(code: MetricCode, required?: string) {
+export function metricNum(code: MetricCode, required?: string) {
   const m = METRICS[code];
   return num(m.inputRange.min, m.inputRange.max, { unit: m.unit, required });
 }

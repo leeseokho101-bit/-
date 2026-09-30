@@ -29,6 +29,7 @@ test.describe("보안·개인정보", () => {
       "/report/plan",
       "/assessment",
       "/assessment/profile",
+      "/assessment/checkup/photo",
       "/assessment/review",
     ]) {
       await page.goto(path);

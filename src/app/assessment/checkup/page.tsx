@@ -15,14 +15,25 @@ import {
 import { saveCheckup } from "@/features/assessment/actions";
 import { loadStep } from "@/features/assessment/load-step";
 import { CHECKUP_INPUT_CODES } from "@/features/assessment/schemas";
-import { assessmentStepPath } from "@/lib/routes";
+import { assessmentStepPath, routes } from "@/lib/routes";
+import { ButtonLink } from "@/components/ui/button-link";
+import { isCheckupPhotoAvailable } from "@/server/ai/checkup-reader";
+import { db } from "@/server/db";
+import { listCheckupConnectors } from "@/server/integrations/checkup/connectors";
 
 export const metadata = { title: "건강검진 | 입체적 건강분석" };
 
 const inputCodes = new Set<string>(CHECKUP_INPUT_CODES);
 
 export default async function CheckupStepPage() {
-  const { inputs, prevHref } = await loadStep("checkup");
+  const { assessmentId, inputs, prevHref } = await loadStep("checkup");
+  const photoCount = await db.measurement.count({
+    // BMI는 자동 계산값이라 제외
+    where: { assessmentId, source: "PHOTO_OCR", metric: { not: "BMI" } },
+  });
+  const plannedConnectors = listCheckupConnectors().filter(
+    (c) => c.status() === "planned",
+  );
   const defaults: Record<string, string> = {};
   if (inputs.checkupDate)
     defaults.checkupDate = inputs.checkupDate.toISOString().slice(0, 10);
@@ -34,6 +45,32 @@ export default async function CheckupStepPage() {
 
   return (
     <StepPage slug="checkup">
+      {isCheckupPhotoAvailable() && (
+        <Card>
+          <p className="font-semibold">입력이 번거로우신가요?</p>
+          <p className="text-muted mt-1 text-sm leading-relaxed">
+            결과표를 사진으로 찍으면 수치를 읽어 채워 드려요.
+          </p>
+          <ButtonLink href={routes.checkupPhoto} className="mt-3 w-full">
+            📷 결과표 사진으로 입력
+          </ButtonLink>
+          {plannedConnectors.length > 0 && (
+            <p className="text-muted mt-3 text-xs">
+              {plannedConnectors.map((c) => c.name).join("·")} 결과 자동
+              불러오기는 준비 중이에요.
+            </p>
+          )}
+        </Card>
+      )}
+      {photoCount > 0 && (
+        <p
+          role="status"
+          className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900"
+        >
+          사진에서 읽어 온 값 {photoCount}개가 들어 있어요. 결과표와 한 번 더
+          비교해 주세요.
+        </p>
+      )}
       <Card className="bg-primary/5 border-primary/20">
         <p className="leading-relaxed">
           건강검진 결과표를 옆에 두고 입력해 주세요.{" "}

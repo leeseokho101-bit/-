@@ -13,5 +13,5 @@ export async function loadStep(slug: AssessmentStepSlug) {
     assessmentStepPath(slug),
   );
   const inputs = await loadAssessmentInputs(user.id, assessmentId);
-  return { inputs, prevHref: getAssessmentStep(slug).prevPath };
+  return { assessmentId, inputs, prevHref: getAssessmentStep(slug).prevPath };
 }

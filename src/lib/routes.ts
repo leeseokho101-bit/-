@@ -8,6 +8,7 @@ export const routes = {
   login: "/login",
   signup: "/signup",
   assessment: "/assessment",
+  checkupPhoto: "/assessment/checkup/photo",
   report: "/report",
   reportProfile: "/report/profile",
   reportPriorities: "/report/priorities",

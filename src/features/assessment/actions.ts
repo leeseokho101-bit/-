@@ -85,6 +85,12 @@ async function setMetric(
     await tx.measurement.deleteMany({ where: { assessmentId, metric } });
     return;
   }
+  const existing = await tx.measurement.findUnique({
+    where: { assessmentId_metric: { assessmentId, metric } },
+    select: { value: true },
+  });
+  // 값이 그대로면 출처(사진 판독 등)를 유지하고, 사용자가 고친 값만 직접 입력으로 바꾼다
+  if (existing && Number(existing.value) === value) return;
   const data = { value, unit: METRICS[metric].unit, source: "MANUAL" as const };
   await tx.measurement.upsert({
     where: { assessmentId_metric: { assessmentId, metric } },

@@ -75,5 +75,6 @@ GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄�
 - [x] STEP 9 12주 건강관리
 - [x] STEP 10 테스트
 - [x] STEP 11 배포 — https://seokho2.vercel.app (Vercel + Neon)
+- [x] 추가: 건강검진 결과표 사진 판독, 공단·검진센터 연동 틀 (`docs/CHECKUP_IMPORT.md`)
 
 > ⚠️ 본 서비스는 의료행위(진단·처방)를 하지 않습니다. 결과는 건강관리 참고용입니다.

@@ -18,7 +18,7 @@ import { FREQUENCIES } from "@/domain/health-snapshot/survey";
 import { sampleUsers } from "@/dev/samples";
 import {
   AnthropicNarrativeProvider,
-  NarrativeProviderError,
+  LlmProviderError,
 } from "@/server/ai/provider";
 import { snap, snapshotOf } from "./engine-helpers";
 
@@ -359,13 +359,13 @@ describe("AnthropicNarrativeProvider (가짜 클라이언트)", () => {
     }
   });
 
-  it("API 오류는 NarrativeProviderError로 감싼다", async () => {
+  it("API 오류는 LlmProviderError로 감싼다", async () => {
     const provider = new AnthropicNarrativeProvider(
       "m",
       vi.fn().mockRejectedValue(new Error("network")) as never,
     );
     await expect(
       provider.generateReportNarrative(input),
-    ).rejects.toBeInstanceOf(NarrativeProviderError);
+    ).rejects.toBeInstanceOf(LlmProviderError);
   });
 });

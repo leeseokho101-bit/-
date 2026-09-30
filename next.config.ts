@@ -32,6 +32,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // 결과표 사진 업로드 (브라우저에서 줄여 보내지만, 변환 못 한 원본 4MB + 여유분, Vercel 요청 한도 4.5MB)
+      bodySizeLimit: "4.5mb",
+    },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
