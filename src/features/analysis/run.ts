@@ -2,6 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { analyze } from "@/domain/analysis/engine";
+import { calculateBioAge } from "@/domain/bio-age/engine";
 import { buildHealthSnapshot, canonicalJson } from "@/domain/analysis/snapshot";
 import type { AnalysisOutput } from "@/domain/analysis/types";
 import type { MetricCode } from "@/domain/health-snapshot/metrics";
@@ -28,7 +29,10 @@ export async function runAnalysis(
       user: { select: { profile: { select: { sex: true, birthDate: true } } } },
       measurements: { select: { metric: true, value: true } },
       survey: { select: { answers: true } },
-      medications: { select: { purpose: true } },
+      medications: {
+        select: { purpose: true, drugCode: true, dailyTablets: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   const profile = a.user.profile;
@@ -46,6 +50,17 @@ export async function runAnalysis(
   });
 
   const output = analyze(snapshot);
+  // 생체나이: 같은 지표 + 복용약 성분·용량 (결과 JSON 안에 자체 버전을 함께 저장)
+  const bioAge = calculateBioAge({
+    sex: snapshot.demographics.sex,
+    age: snapshot.demographics.age,
+    metrics: snapshot.metrics,
+    medications: a.medications.map((m) => ({
+      purpose: m.purpose,
+      drugCode: m.drugCode,
+      dailyTablets: m.dailyTablets?.toNumber() ?? null,
+    })),
+  });
   const inputHash = createHash("sha256")
     .update(`${output.engineVersion}|${canonicalJson(snapshot)}`)
     .digest("hex");
@@ -55,6 +70,7 @@ export async function runAnalysis(
     inputHash,
     domains: output.domains as unknown as Prisma.InputJsonValue,
     priorities: output.priorities as unknown as Prisma.InputJsonValue,
+    bioAge: bioAge as unknown as Prisma.InputJsonValue,
   };
   await db.analysisResult.upsert({
     where: { assessmentId },

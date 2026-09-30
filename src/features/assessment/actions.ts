@@ -207,6 +207,8 @@ export async function saveMedications(_prev: FormState, formData: FormData) {
             name: m.name!,
             purpose: m.purpose || null,
             frequency: m.frequency || null,
+            drugCode: m.drugCode ?? null,
+            dailyTablets: m.dailyTablets ?? null,
           })),
         });
       }

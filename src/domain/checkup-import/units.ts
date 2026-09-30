@@ -68,6 +68,10 @@ const UNIT_TABLE: Record<
     canonical: MG_DL,
     convert: [{ units: ["umol/l"], factor: (v) => v / 88.42 }],
   },
+  HEMOGLOBIN: {
+    canonical: ["g/dl"],
+    convert: [{ units: ["g/l"], factor: (v) => v / 10 }],
+  },
   EGFR: { canonical: ["ml/min/1.73m2", "ml/min", "ml/min/{1.73_m2}"] },
 };
 

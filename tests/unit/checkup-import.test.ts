@@ -198,8 +198,9 @@ describe("건강보험공단 결과 변환 (fromNhisRecord)", () => {
     expect(byMetric.AST.value).toBe(24);
     expect(byMetric.GGT.value).toBe(30);
     expect(byMetric.EGFR.value).toBe(95);
-    // 앱에서 쓰지 않는 항목(요단백·혈색소)은 무시 — 14개 = 13개 항목 + 혈압 2개로 나눔
-    expect(raw.items).toHaveLength(14);
+    expect(byMetric.HEMOGLOBIN.value).toBe(13.5);
+    // 앱에서 쓰지 않는 항목(요단백)은 무시 — 15개 = 14개 항목 + 혈압 2개로 나눔
+    expect(raw.items).toHaveLength(15);
 
     const out = normalizeCheckup(raw, TODAY);
     expect(out.values.WAIST).toBe(80);

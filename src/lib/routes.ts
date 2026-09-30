@@ -13,6 +13,7 @@ export const routes = {
   reportProfile: "/report/profile",
   reportPriorities: "/report/priorities",
   reportPlan: "/report/plan",
+  reportBioAge: "/report/bio-age",
   dashboard: "/dashboard",
   mypage: "/mypage",
   devSamples: "/dev/samples",
@@ -80,6 +81,7 @@ export function getAssessmentStep(slug: AssessmentStepSlug) {
 export const reportTabs = [
   { href: routes.report, label: "요약" },
   { href: routes.reportProfile, label: "건강 프로파일" },
+  { href: routes.reportBioAge, label: "생체나이" },
   { href: routes.reportPriorities, label: "우선순위 TOP 3" },
   { href: routes.reportPlan, label: "12주 계획" },
 ] as const;

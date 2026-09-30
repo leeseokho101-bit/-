@@ -405,6 +405,15 @@ type PriorityItem = {
 - 주간 체크: 현재 주차까지만 기록 가능(서버 검증), 실천율 기반 템플릿 피드백.
 - 대시보드 "최근 변화": 주차별 실천율 막대(단일 계열, dataviz 검증 색 `#1a7fa6`), 체중 변화 숫자 카드, 이전 분석 대비 영역 상태 변화.
 
+### 5.7 생체나이 (추가 기능)
+
+- 코드: `src/domain/bio-age/*`(순수 함수·규칙), `src/domain/medication/catalog.ts`(성분·복합제 카탈로그), 화면 `/report/bio-age`
+- 입력: 검진 지표(신규 `HEMOGLOBIN` 포함) + 복용약(`Medication.drugCode` 성분·함량 코드, `dailyTablets` 하루 알 수)
+- 출력: 간·혈관·혈압·신장·당뇨·빈혈·대사증후군 나이(검진 수치 기준 / 약 복용 보정), 대사증후군 판정 기준 도달 추정 시점
+- `runAnalysis`에서 함께 계산해 `AnalysisResult.bioAge`에 저장 (자체 버전 `bioage-*`). 이전 결과는 재분석 시 생성
+- 기존 "대사증후군 명칭 미사용" 원칙의 예외: 생체나이 화면에서만 "대사증후군 판정 기준"이라는 기준 명칭으로 사용하며,
+  "~입니다/의심" 같은 판정 표현 없이 기준 요소 해당 여부와 도달 추정 시점만 보여 준다. 상세 규칙: `docs/RULES_REFERENCE.md` §6
+
 ## 6. API 구조
 
 폼 입력은 **Server Actions**, 외부 확장이 예상되는 엔드포인트는 **Route Handlers(`/api/*`)** 로 둡니다. 모든 건강정보는 POST body로만 전달.

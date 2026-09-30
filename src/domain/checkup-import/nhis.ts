@@ -24,6 +24,7 @@ export const NHIS_FIELD_ALIASES: Record<ImportableCode, string[]> = {
   ALT: ["alt", "sgpt", "혈청지피티", "혈청지피티(alt)", "alt(sgpt)"],
   GGT: ["감마지티피", "γ-gtp", "감마지티피(γ-gtp)", "ggt", "gtp"],
   CREATININE: ["혈청크레아티닌", "크레아티닌", "creatinine"],
+  HEMOGLOBIN: ["혈색소", "헤모글로빈", "hemoglobin", "hb", "hgb"],
   EGFR: ["신사구체여과율", "사구체여과율", "e-gfr", "egfr"],
 };
 
@@ -71,7 +72,7 @@ function splitValueUnit(v: unknown): { value: number | null; unit?: string } {
 
 /**
  * 공단 검진 결과 한 건(항목명 → 값)을 공통 형식으로 바꾼다.
- * 알 수 없는 항목(요단백, 혈색소 등 앱에서 쓰지 않는 항목)은 무시한다.
+ * 알 수 없는 항목(요단백·흉부방사선 등 앱에서 쓰지 않는 항목)은 무시한다.
  */
 export function fromNhisRecord(
   record: Record<string, unknown>,

@@ -24,6 +24,7 @@ export const LOINC_TO_METRIC: Record<string, ImportableCode> = {
   "1742-6": "ALT", // ALT
   "2324-2": "GGT", // GGT
   "2160-0": "CREATININE", // Creatinine
+  "718-7": "HEMOGLOBIN", // Hemoglobin
   "33914-3": "EGFR", // eGFR (MDRD)
   "62238-1": "EGFR", // eGFR (CKD-EPI)
   "98979-8": "EGFR", // eGFR (CKD-EPI 2021)

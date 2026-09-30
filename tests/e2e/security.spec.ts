@@ -27,6 +27,7 @@ test.describe("보안·개인정보", () => {
       "/report/profile",
       "/report/priorities",
       "/report/plan",
+      "/report/bio-age",
       "/assessment",
       "/assessment/profile",
       "/assessment/checkup/photo",

@@ -16,6 +16,8 @@ function inputsOf(id: string): AssessmentInputs {
       name: m.name,
       purpose: m.purpose ?? null,
       frequency: m.frequency ?? null,
+      drugCode: m.drugCode ?? null,
+      dailyTablets: m.dailyTablets ?? null,
     })),
   };
 }

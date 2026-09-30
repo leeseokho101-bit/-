@@ -17,6 +17,8 @@ export type AssessmentInputs = {
     name: string;
     purpose: string | null;
     frequency: string | null;
+    drugCode: string | null;
+    dailyTablets: number | null;
   }[];
 };
 
@@ -40,7 +42,13 @@ export async function loadAssessmentInputs(
         measurements: { select: { metric: true, value: true } },
         survey: { select: { answers: true } },
         medications: {
-          select: { name: true, purpose: true, frequency: true },
+          select: {
+            name: true,
+            purpose: true,
+            frequency: true,
+            drugCode: true,
+            dailyTablets: true,
+          },
           orderBy: { createdAt: "asc" },
         },
       },
@@ -56,6 +64,9 @@ export async function loadAssessmentInputs(
     ) as AssessmentInputs["metrics"],
     survey: parseSurveyAnswers(assessment.survey?.answers),
     hasSurvey: !!assessment.survey,
-    medications: assessment.medications,
+    medications: assessment.medications.map((m) => ({
+      ...m,
+      dailyTablets: m.dailyTablets?.toNumber() ?? null,
+    })),
   };
 }
