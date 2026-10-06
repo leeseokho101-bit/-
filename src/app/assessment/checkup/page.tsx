@@ -31,6 +31,7 @@ export default async function CheckupStepPage() {
     // BMI는 자동 계산값이라 제외
     where: { assessmentId, source: "PHOTO_OCR", metric: { not: "BMI" } },
   });
+  const photoAvailable = isCheckupPhotoAvailable();
   const plannedConnectors = listCheckupConnectors().filter(
     (c) => c.status() === "planned",
   );
@@ -45,23 +46,31 @@ export default async function CheckupStepPage() {
 
   return (
     <StepPage slug="checkup">
-      {isCheckupPhotoAvailable() && (
-        <Card>
-          <p className="font-semibold">입력이 번거로우신가요?</p>
-          <p className="text-muted mt-1 text-sm leading-relaxed">
-            결과표를 사진으로 찍으면 수치를 읽어 채워 드려요.
-          </p>
-          <ButtonLink href={routes.checkupPhoto} className="mt-3 w-full">
-            📷 결과표 사진으로 입력
-          </ButtonLink>
-          {plannedConnectors.length > 0 && (
-            <p className="text-muted mt-3 text-xs">
-              {plannedConnectors.map((c) => c.name).join("·")} 결과 자동
-              불러오기는 준비 중이에요.
+      <Card>
+        <p className="font-semibold">입력이 번거로우신가요?</p>
+        {photoAvailable ? (
+          <>
+            <p className="text-muted mt-1 text-sm leading-relaxed">
+              결과표를 사진으로 찍으면 수치를 읽어 채워 드려요.
             </p>
-          )}
-        </Card>
-      )}
+            <ButtonLink href={routes.checkupPhoto} className="mt-3 w-full">
+              📷 결과표 사진으로 입력
+            </ButtonLink>
+          </>
+        ) : (
+          // API Key가 없으면 기능을 숨기지 않고 "준비 중"으로 보여준다 (설정 누락을 알아차릴 수 있게)
+          <p className="text-muted mt-1 text-sm leading-relaxed">
+            📷 결과표 사진으로 입력하는 기능은 준비 중이에요. 지금은 아래에 직접
+            입력해 주세요.
+          </p>
+        )}
+        {plannedConnectors.length > 0 && (
+          <p className="text-muted mt-3 text-xs">
+            {plannedConnectors.map((c) => c.name).join("·")} 결과 자동
+            불러오기는 준비 중이에요.
+          </p>
+        )}
+      </Card>
       {photoCount > 0 && (
         <p
           role="status"

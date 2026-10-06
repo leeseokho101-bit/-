@@ -43,7 +43,8 @@ test.describe("보안·개인정보", () => {
   }) => {
     const res = await request.get("/api/health");
     expect(res.status()).toBe(200);
-    expect(await res.json()).toEqual({ status: "ok", db: "ok" });
+    // E2E 서버는 API Key 없이 실행된다
+    expect(await res.json()).toEqual({ status: "ok", db: "ok", ai: "off" });
   });
 
   test("개발용 샘플 화면은 production에서 존재하지 않는다", async ({

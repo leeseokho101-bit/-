@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { saveAndNext, signup, uniqueEmail } from "./helpers";
 
 // E2E 서버는 ANTHROPIC_API_KEY 없이 실행된다 → 사진 판독은 꺼지고 직접 입력으로 안내
-test("API Key가 없으면 사진 판독을 숨기고 직접 입력으로 안내한다", async ({
+test("API Key가 없으면 사진 판독을 준비 중으로 표시하고 직접 입력으로 안내한다", async ({
   page,
 }) => {
   await signup(page, uniqueEmail("photo"));
@@ -15,7 +15,12 @@ test("API Key가 없으면 사진 판독을 숨기고 직접 입력으로 안내
   await page.fill("#f-WEIGHT", "60");
   await saveAndNext(page, "/assessment/checkup");
 
-  await expect(page.getByText("결과표 사진으로 입력")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: /결과표 사진으로 입력/ }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("사진으로 입력하는 기능은 준비 중이에요"),
+  ).toBeVisible();
 
   await page.goto("/assessment/checkup/photo");
   await expect(
