@@ -161,7 +161,7 @@ describe("readCheckupPhoto", () => {
     });
     expect(kinds).toEqual([
       { status: "FAILED", errorKind: "not-checkup" },
-      { status: "FAILED", errorKind: "refusal" },
+      { status: "FAILED", errorKind: "refusal: refused" },
       { status: "FAILED", errorKind: "no-values" },
     ]);
   });

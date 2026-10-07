@@ -139,10 +139,16 @@ export async function readCheckupPhoto(
     read = await reader.read({ data: input.bytes, mediaType });
   } catch (error) {
     const kind = error instanceof LlmProviderError ? error.kind : "unknown";
-    await record({ status: "FAILED", errorKind: kind });
+    // 예: "status 401 authentication_error invalid x-api-key" — 개인정보 없음
+    const detail = error instanceof Error ? error.message : String(error);
+    await record({
+      status: "FAILED",
+      errorKind: `${kind}: ${detail}`.slice(0, 200),
+    });
     logger.warn("checkup photo read failed", {
       userId: input.userId,
       kind,
+      detail,
     });
     return { ok: false, reason: "failed" };
   }

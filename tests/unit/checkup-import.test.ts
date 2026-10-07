@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it, vi } from "vitest";
 import { fromFhirObservations } from "@/domain/checkup-import/fhir";
 import {
@@ -365,6 +366,35 @@ describe("AnthropicCheckupPhotoReader (가짜 클라이언트)", () => {
       expect(err).toBeInstanceOf(LlmProviderError);
       expect(err.kind).toBe(kind);
     }
+  });
+});
+
+describe("API 오류 원인 기록", () => {
+  it("상태 코드·오류 종류·오류 문구를 담는다", async () => {
+    const apiError = new Anthropic.AuthenticationError(
+      401,
+      {
+        type: "error",
+        error: { type: "authentication_error", message: "invalid x-api-key" },
+      },
+      undefined,
+      new Headers(),
+    );
+    const reader = new AnthropicCheckupPhotoReader(
+      "m",
+      vi.fn().mockRejectedValue(apiError) as never,
+    );
+    const err = await reader
+      .read({
+        data: new Uint8Array([0xff, 0xd8, 0xff]),
+        mediaType: "image/jpeg",
+      })
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(LlmProviderError);
+    expect(err.kind).toBe("api");
+    expect(err.message).toBe(
+      "status 401 authentication_error invalid x-api-key",
+    );
   });
 });
 

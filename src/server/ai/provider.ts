@@ -79,7 +79,17 @@ export async function requestStructured<T>(
     });
   } catch (error) {
     if (error instanceof Anthropic.APIError) {
-      throw new LlmProviderError("api", `status ${error.status ?? "unknown"}`);
+      // 원인 파악용: 상태 코드 + 오류 종류 + API 오류 문구(요청 내용은 담기지 않음)
+      const body = error.error as
+        { error?: { type?: string; message?: string } } | undefined;
+      const detail = [
+        `status ${error.status ?? "unknown"}`,
+        body?.error?.type ?? error.name,
+        body?.error?.message?.slice(0, 200),
+      ]
+        .filter(Boolean)
+        .join(" ");
+      throw new LlmProviderError("api", detail);
     }
     throw new LlmProviderError(
       "api",
