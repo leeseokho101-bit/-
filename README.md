@@ -77,5 +77,6 @@ GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄�
 - [x] STEP 11 배포 — https://seokho2.vercel.app (Vercel + Neon)
 - [x] 생체나이 — 간·혈관·혈압·신장·당뇨·빈혈·대사증후군 나이, 복용약 성분·용량 보정, 판정 기준 도달 시점 추정 (`/report/bio-age`)
 - [x] 추가: 건강검진 결과표 사진 판독, 공단·검진센터 연동 틀 (`docs/CHECKUP_IMPORT.md`)
+- [x] 추가: 매일 걸음수·운동 기록 → 운동 반영 예상 생체나이 (`/activity`, `docs/RULES_REFERENCE.md` §6.6)
 
 > ⚠️ 본 서비스는 의료행위(진단·처방)를 하지 않습니다. 결과는 건강관리 참고용입니다.

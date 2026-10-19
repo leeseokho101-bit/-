@@ -23,6 +23,7 @@ test.describe("보안·개인정보", () => {
     for (const path of [
       "/dashboard",
       "/mypage",
+      "/activity",
       "/report",
       "/report/profile",
       "/report/priorities",

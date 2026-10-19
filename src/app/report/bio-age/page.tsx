@@ -13,6 +13,10 @@ import { bioAgeDisclaimer, referenceSourceText } from "@/content/bio-age";
 import { getLatestReport } from "@/features/analysis/queries";
 import { routes } from "@/lib/routes";
 import { requireUser } from "@/server/auth/session";
+import { db } from "@/server/db";
+import { ActivityProjectionView } from "@/components/report/activity-projection";
+import { koreaDate } from "@/features/activity/date";
+import { getActivityOverview } from "@/features/activity/service";
 
 export const metadata = { title: "생체나이 | 입체적 건강분석" };
 
@@ -47,10 +51,31 @@ export default async function BioAgePage() {
     );
   }
 
+  const activity = await getActivityOverview(db, user.id, koreaDate());
+
   return (
     <>
       {header}
       <BioAgeSummary result={bio} />
+      <section className="flex flex-col gap-3" aria-labelledby="activity-title">
+        <h2 id="activity-title" className="text-lg font-bold">
+          걸음수·운동으로 바뀌는 생체나이
+        </h2>
+        <Card className="flex flex-col gap-3">
+          {activity.projection && activity.age !== null ? (
+            <ActivityProjectionView
+              projection={activity.projection}
+              age={activity.age}
+            />
+          ) : (
+            <p className="text-sm leading-relaxed">
+              매일 걸음수와 운동(종류·강도·시간)을 기록하면 임상시험에서 확인된
+              평균 효과로 수치 변화를 추정해, 예상 생체나이를 보여 드려요.
+            </p>
+          )}
+          <ButtonLink href={routes.activity}>걸음수·운동 기록하기</ButtonLink>
+        </Card>
+      </section>
       <section className="flex flex-col gap-3" aria-labelledby="organs-title">
         <h2 id="organs-title" className="text-lg font-bold">
           영역별 생체나이

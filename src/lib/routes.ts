@@ -15,6 +15,7 @@ export const routes = {
   reportPlan: "/report/plan",
   reportBioAge: "/report/bio-age",
   dashboard: "/dashboard",
+  activity: "/activity",
   mypage: "/mypage",
   devSamples: "/dev/samples",
 } as const;

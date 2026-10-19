@@ -21,6 +21,10 @@ import { phaseInfo } from "@/domain/plan/library";
 import { statusContent } from "@/content/domains";
 import { routes } from "@/lib/routes";
 import { requireUser } from "@/server/auth/session";
+import { db } from "@/server/db";
+import { ActivityProjectionView } from "@/components/report/activity-projection";
+import { koreaDate } from "@/features/activity/date";
+import { getActivityOverview } from "@/features/activity/service";
 
 export const metadata = { title: "대시보드 | 입체적 건강분석" };
 
@@ -61,10 +65,13 @@ export default async function DashboardPage() {
     );
   }
 
-  const [plan, comparison] = await Promise.all([
+  const today = koreaDate();
+  const [plan, comparison, activity] = await Promise.all([
     getPlanView(user.id),
     getAnalysisComparison(user.id),
+    getActivityOverview(db, user.id, today),
   ]);
+  const loggedToday = activity.logs.some((l) => l.date === today);
   const byCode = new Map(report.domains.map((d) => [d.domain, d]));
   const thisWeek = plan?.weeks.find((w) => w.weekNumber === plan.currentWeek);
   const weighed =
@@ -122,6 +129,32 @@ export default async function DashboardPage() {
           </Card>
         </section>
       )}
+
+      {/* 활동 기록 → 운동 반영 예상 생체나이 */}
+      <section className="flex flex-col gap-3">
+        <SectionTitle
+          title="걸음수·운동 기록"
+          href={routes.activity}
+          linkLabel="기록하기"
+        />
+        <Card className="flex flex-col gap-3">
+          {activity.projection && activity.age !== null ? (
+            <ActivityProjectionView
+              projection={activity.projection}
+              age={activity.age}
+              compact
+            />
+          ) : (
+            <p className="text-sm leading-relaxed">
+              매일 걸음수와 운동을 기록하면, 운동 효과를 반영한 예상 생체나이를
+              보여 드려요.
+            </p>
+          )}
+          <ButtonLink href={routes.activity}>
+            {loggedToday ? "오늘 기록 고치기" : "오늘 기록하기"}
+          </ButtonLink>
+        </Card>
+      </section>
 
       {/* 2. 나의 건강 프로파일 */}
       <section className="flex flex-col gap-3">

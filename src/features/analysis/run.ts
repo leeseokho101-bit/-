@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { analyze } from "@/domain/analysis/engine";
 import { calculateBioAge } from "@/domain/bio-age/engine";
+import type { BioAgeInput } from "@/domain/bio-age/types";
 import { buildHealthSnapshot, canonicalJson } from "@/domain/analysis/snapshot";
 import type { AnalysisOutput } from "@/domain/analysis/types";
 import type { MetricCode } from "@/domain/health-snapshot/metrics";
@@ -12,14 +13,8 @@ type Db = PrismaClient | Prisma.TransactionClient;
 
 export class AnalysisInputError extends Error {}
 
-/**
- * 저장된 입력으로 분석 엔진을 실행하고 결과를 저장한다.
- * 같은 입력이면 inputHash가 같고 결과도 같다 (엔진 버전이 같을 때).
- */
-export async function runAnalysis(
-  db: Db,
-  assessmentId: string,
-): Promise<{ output: AnalysisOutput; inputHash: string }> {
+/** 저장된 입력 → 분석 엔진·생체나이 엔진 입력 (분석 실행과 운동 반영 예상이 같은 입력을 쓰도록 공유) */
+export async function loadAnalysisInputs(db: Db, assessmentId: string) {
   const a = await db.assessment.findUniqueOrThrow({
     where: { id: assessmentId },
     select: {
@@ -48,10 +43,8 @@ export async function runAnalysis(
     survey: parseSurveyAnswers(a.survey?.answers),
     medicationPurposes: a.medications.map((m) => m.purpose),
   });
-
-  const output = analyze(snapshot);
-  // 생체나이: 같은 지표 + 복용약 성분·용량 (결과 JSON 안에 자체 버전을 함께 저장)
-  const bioAge = calculateBioAge({
+  // 생체나이: 같은 지표 + 복용약 성분·용량
+  const bioAgeInput: BioAgeInput = {
     sex: snapshot.demographics.sex,
     age: snapshot.demographics.age,
     metrics: snapshot.metrics,
@@ -60,7 +53,22 @@ export async function runAnalysis(
       drugCode: m.drugCode,
       dailyTablets: m.dailyTablets?.toNumber() ?? null,
     })),
-  });
+  };
+  return { snapshot, bioAgeInput };
+}
+
+/**
+ * 저장된 입력으로 분석 엔진을 실행하고 결과를 저장한다.
+ * 같은 입력이면 inputHash가 같고 결과도 같다 (엔진 버전이 같을 때).
+ */
+export async function runAnalysis(
+  db: Db,
+  assessmentId: string,
+): Promise<{ output: AnalysisOutput; inputHash: string }> {
+  const { snapshot, bioAgeInput } = await loadAnalysisInputs(db, assessmentId);
+  const output = analyze(snapshot);
+  // 결과 JSON 안에 생체나이 자체 버전을 함께 저장
+  const bioAge = calculateBioAge(bioAgeInput);
   const inputHash = createHash("sha256")
     .update(`${output.engineVersion}|${canonicalJson(snapshot)}`)
     .digest("hex");
