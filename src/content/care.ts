@@ -13,14 +13,14 @@ import type {
   TriageLevel,
 } from "@/domain/glp1/symptoms";
 
-export const CARE_CONSENT_VERSION = "care-consent-2026-10-v1";
+export const CARE_CONSENT_VERSION = "care-consent-2026-10-v2";
 
 export const careConsentItems = [
   {
     name: "consentService",
     required: true,
     title: "[필수] 서비스 이용을 위한 건강정보 수집·이용",
-    body: "투약 기록, 혈당(CGM) 값, 식사 기록, 부작용 체크인, 체중을 모아 관리 화면과 위험 신호 안내를 제공합니다. 탈퇴하거나 삭제를 요청하면 지체 없이 파기합니다.",
+    body: "투약 기록, 혈당(CGM) 값, 식사 기록, 부작용 체크인, 체중, 코치와 나눈 대화를 모아 관리 화면과 위험 신호 안내를 제공합니다. 담당 코치(영양사·운동처방사)가 이 기록을 보고 생활습관 코칭을 합니다. 탈퇴하거나 삭제를 요청하면 지체 없이 파기합니다.",
   },
   {
     name: "shareWithClinic",
@@ -156,6 +156,7 @@ export const alertContent: Record<AlertKind, string> = {
   SEVERE_LOW_GLUCOSE:
     "최근 7일 동안 혈당이 54mg/dL 아래로 15분 넘게 내려간 구간이 있었어요.",
   MISSED_DOSES: "최근 4주 동안 투약을 여러 번 놓쳤어요.",
+  COACH_REFERRAL: "담당 코치가 의원과 상의해 보시는 게 좋겠다고 알려 왔어요.",
 };
 
 export const alertAction = "에 연락해 상의해 주세요.";

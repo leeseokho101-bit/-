@@ -42,12 +42,25 @@ export async function loginAsCareSample(): Promise<void> {
 /** 개발 전용: 가상 의원(가상 환자 2명 포함)을 다시 만들고 가상 의사로 로그인한다 */
 export async function loginAsClinicSample(): Promise<void> {
   if (!isDevelopment()) notFound();
-  const userId = await resetClinicSample(
+  const { doctorId } = await resetClinicSample(
     db,
     await hashPassword(SAMPLE_PASSWORD),
   );
   await deleteSession();
-  await createSession(userId);
-  logger.info("dev clinic sample login", { userId });
+  await createSession(doctorId);
+  logger.info("dev clinic sample login", { userId: doctorId });
   redirect(routes.clinic);
+}
+
+/** 개발 전용: 같은 가상 의원 데모를 다시 만들고 가상 코치로 로그인한다 */
+export async function loginAsCoachSample(): Promise<void> {
+  if (!isDevelopment()) notFound();
+  const { coachId } = await resetClinicSample(
+    db,
+    await hashPassword(SAMPLE_PASSWORD),
+  );
+  await deleteSession();
+  await createSession(coachId);
+  logger.info("dev coach sample login", { userId: coachId });
+  redirect(routes.coach);
 }

@@ -146,6 +146,7 @@ export type OpenAlert = {
   kind: AlertKind;
   level: TriageLevel;
   detectedAt: Date;
+  detail: string | null;
 };
 
 /**
@@ -255,6 +256,7 @@ export async function listClinicPatients(
       kind: a.kind,
       level: a.level,
       detectedAt: a.detectedAt,
+      detail: a.detail,
     })),
   };
 }
@@ -271,6 +273,7 @@ export type PatientReport = {
     level: TriageLevel;
     detectedAt: Date;
     acknowledgedAt: Date | null;
+    detail: string | null;
   }[];
   weight: WeightTrend | null;
   glucose: {
@@ -346,6 +349,7 @@ export async function getPatientReport(
       level: a.level,
       detectedAt: a.detectedAt,
       acknowledgedAt: a.acknowledgedAt,
+      detail: a.detail,
     })),
     weight: weightTrend(checkIns, period.from, today),
     glucose: {

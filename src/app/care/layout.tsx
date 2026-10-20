@@ -1,6 +1,7 @@
 import { CareTabs } from "@/components/care/care-tabs";
 import { PageContainer } from "@/components/layout/page-container";
 import { getEnrollment } from "@/features/care/service";
+import { unreadForPatient } from "@/features/coaching/service";
 import { routes } from "@/lib/routes";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -9,10 +10,11 @@ import { db } from "@/server/db";
 export default async function CareLayout({ children }: LayoutProps<"/care">) {
   const user = await requireUser(routes.care);
   const enrolled = !!(await getEnrollment(db, user.id));
+  const unread = enrolled ? await unreadForPatient(db, user.id) : 0;
   return (
     <>
       <PageContainer>{children}</PageContainer>
-      {enrolled && <CareTabs />}
+      {enrolled && <CareTabs unread={unread} />}
     </>
   );
 }

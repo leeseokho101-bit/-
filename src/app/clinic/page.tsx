@@ -100,8 +100,9 @@ export default async function ClinicPage() {
                     <ul className="text-sm">
                       {mine.map((a) => (
                         <li key={a.id}>
-                          {alertLabels[a.kind]} · {levelLabels[a.level]} ·{" "}
-                          {formatDateTime(a.detectedAt)}
+                          {alertLabels[a.kind]}
+                          {a.detail && `(${a.detail})`} · {levelLabels[a.level]}{" "}
+                          · {formatDateTime(a.detectedAt)}
                         </li>
                       ))}
                     </ul>

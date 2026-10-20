@@ -125,8 +125,9 @@ export default async function ClinicPatientPage({
           <ul className="flex flex-col gap-0.5 text-sm">
             {report.alerts.map((a) => (
               <li key={a.id}>
-                {a.acknowledgedAt ? "✓" : "⚠"} {alertLabels[a.kind]} ·{" "}
-                {levelLabels[a.level]} · {formatDateTime(a.detectedAt)}
+                {a.acknowledgedAt ? "✓" : "⚠"} {alertLabels[a.kind]}
+                {a.detail && `(${a.detail})`} · {levelLabels[a.level]} ·{" "}
+                {formatDateTime(a.detectedAt)}
                 {a.acknowledgedAt && (
                   <span className="text-muted"> (확인함)</span>
                 )}

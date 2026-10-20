@@ -9,6 +9,7 @@ import { CLINIC_SAMPLE } from "@/dev/clinic-sample";
 import {
   loginAsCareSample,
   loginAsClinicSample,
+  loginAsCoachSample,
   loginAsSample,
 } from "@/features/dev/actions";
 
@@ -89,7 +90,8 @@ export default function DevSamplesPage() {
         </div>
         <p className="text-sm leading-relaxed">
           가상 의원({CARE_SAMPLE.clinicCode})의 의사 계정이에요. 위 케어 가상
-          환자와, 투약·체크인이 끊긴 가상 환자 2를 함께 다시 만들어요.
+          환자와, 투약·체크인이 끊긴 가상 환자 2, 두 환자를 맡은 가상 코치(대화
+          포함)를 함께 다시 만들어요.
         </p>
         <form action={loginAsClinicSample}>
           <button
@@ -97,6 +99,14 @@ export default function DevSamplesPage() {
             className={`${buttonBase} bg-primary text-primary-foreground w-full`}
           >
             가상 의사로 시작하기
+          </button>
+        </form>
+        <form action={loginAsCoachSample}>
+          <button
+            type="submit"
+            className={`${buttonBase} border-border bg-surface w-full border`}
+          >
+            가상 코치({CLINIC_SAMPLE.coachEmail})로 시작하기
           </button>
         </form>
       </Card>

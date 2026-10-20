@@ -163,7 +163,18 @@ describe("GLP-1 케어 (DB)", () => {
   });
 
   it("케어 기록 삭제는 케어 데이터만 지우고, 회원 삭제는 모두 지운다", async () => {
+    await db.coachMessage.create({
+      data: {
+        patientId: userId,
+        senderId: userId,
+        sender: "PATIENT",
+        body: "가상 메시지",
+      },
+    });
     await deleteCareData(db, userId);
+    expect(await db.coachMessage.count({ where: { patientId: userId } })).toBe(
+      0,
+    );
     expect(await getEnrollment(db, userId)).toBeNull();
     for (const n of await Promise.all([
       db.glucoseReading.count({ where: { userId } }),

@@ -29,7 +29,7 @@ async function main() {
     }
     await resetClinicSample(db, passwordHash);
     console.log(
-      `✓ GLP-1 케어 가상 의원 — 의사 ${CLINIC_SAMPLE.doctorEmail}, 환자 2명`,
+      `✓ GLP-1 케어 가상 의원 — 의사 ${CLINIC_SAMPLE.doctorEmail}, 코치 ${CLINIC_SAMPLE.coachEmail}, 환자 2명`,
     );
     console.log(`\n샘플 계정 비밀번호: ${SAMPLE_PASSWORD} (개발 환경 전용)`);
   } finally {

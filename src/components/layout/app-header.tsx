@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { routes } from "@/lib/routes";
 import { getCurrentStaff } from "@/features/clinic/session";
+import { getCurrentCoach } from "@/features/coaching/session";
 import { getCurrentUser } from "@/server/auth/session";
 
 export async function AppHeader() {
   const user = await getCurrentUser();
   const staff = user ? await getCurrentStaff() : null;
+  const coach = user && !staff ? await getCurrentCoach() : null;
   return (
     <header className="border-border bg-surface/90 sticky top-0 z-10 border-b backdrop-blur print:hidden">
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between px-5">
@@ -21,6 +23,10 @@ export async function AppHeader() {
               {staff ? (
                 <Link href={routes.clinic} className="hover:text-foreground">
                   의원
+                </Link>
+              ) : coach ? (
+                <Link href={routes.coach} className="hover:text-foreground">
+                  코칭센터
                 </Link>
               ) : (
                 <>

@@ -24,7 +24,9 @@ export const routes = {
   careCheckIn: "/care/check-in",
   careResponse: "/care/response",
   careSettings: "/care/settings",
+  careCoach: "/care/coach",
   clinic: "/clinic",
+  coach: "/coach",
   mypage: "/mypage",
   devSamples: "/dev/samples",
 } as const;
@@ -103,9 +105,15 @@ export const careTabs = [
   { href: routes.careGlucose, label: "혈당", icon: "📈" },
   { href: routes.careMeals, label: "식사", icon: "🍚" },
   { href: routes.careCheckIn, label: "체크인", icon: "✓" },
+  { href: routes.careCoach, label: "코치", icon: "💬" },
 ] as const;
 
 /** 의사 대시보드 환자 리포트 경로. 환자 ID(추측 불가능한 cuid)만 담고, 접근 시 의원·공유 동의를 확인한다 */
 export function clinicPatientPath(patientId: string): string {
   return `${routes.clinic}/patients/${patientId}`;
+}
+
+/** 코칭 센터 환자 화면 경로 (환자 ID만, 접근 시 담당 코치인지 확인) */
+export function coachPatientPath(patientId: string): string {
+  return `${routes.coach}/patients/${patientId}`;
 }

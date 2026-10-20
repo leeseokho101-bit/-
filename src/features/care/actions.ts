@@ -35,6 +35,7 @@ import {
   saveEnrollment,
   saveMeal,
 } from "./service";
+import { autoAssignCoach } from "@/features/coaching/service";
 import { requireEnrollment } from "./session";
 
 const SAVE_FAILED = "저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
@@ -74,6 +75,12 @@ export async function enrollAction(
       },
       values: echoValues(formData),
     };
+  try {
+    await autoAssignCoach(db, user.id);
+  } catch (error) {
+    // 배정 실패는 등록을 막지 않는다 (코칭 센터의 미배정 목록에 남음)
+    logger.warn("coach auto-assign failed", { userId: user.id, error });
+  }
   logger.info("care enrollment saved", { userId: user.id });
   revalidateCare();
   redirect(routes.care);

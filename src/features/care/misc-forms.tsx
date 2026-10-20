@@ -39,8 +39,9 @@ export function DeleteCareForm() {
   return (
     <form action={action} className="flex flex-col gap-3">
       <p className="text-sm leading-relaxed">
-        투약·혈당·식사·체크인 기록과 의원 연결, 동의 내역을 모두 지웁니다. 지운
-        기록은 되돌릴 수 없어요. 건강분석 결과는 그대로 남아요.
+        투약·혈당·식사·체크인 기록, 코치와 나눈 대화, 의원 연결과 동의 내역을
+        모두 지웁니다. 지운 기록은 되돌릴 수 없어요. 건강분석 결과는 그대로
+        남아요.
       </p>
       <label className="flex cursor-pointer items-start gap-3 text-sm">
         <input

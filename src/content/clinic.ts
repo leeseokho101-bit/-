@@ -31,6 +31,7 @@ export const alertLabels: Record<AlertKind, string> = {
   LOW_GLUCOSE: "CGM <70mg/dL 구간 반복 (7일 2회 이상)",
   SEVERE_LOW_GLUCOSE: "CGM <54mg/dL 15분 이상",
   MISSED_DOSES: "투약 누락 (최근 4주)",
+  COACH_REFERRAL: "코치 의뢰",
 };
 
 export const levelLabels: Record<TriageLevel, string> = {

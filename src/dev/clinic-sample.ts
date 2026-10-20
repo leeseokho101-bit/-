@@ -13,16 +13,18 @@ export const CLINIC_SAMPLE = {
   doctorName: "가상 의사",
   patient2Email: "sample-care2@example.invalid",
   patient2Name: "케어 가상 환자 2",
+  coachEmail: "sample-coach@example.invalid",
+  coachName: "한가상",
 } as const;
 
 const dateOf = (iso: string) => new Date(`${iso}T00:00:00Z`);
 
-/** 의사 계정 ID를 돌려준다 */
+/** 의사·코치 계정 ID를 돌려준다 */
 export async function resetClinicSample(
   db: PrismaClient,
   passwordHash: string,
   now: number = Date.now(),
-): Promise<string> {
+): Promise<{ doctorId: string; coachId: string }> {
   assertSampleEnvironment();
   const today = new Date(now + 9 * HOUR_MS).toISOString().slice(0, 10);
   const patient1 = await resetCareSample(db, passwordHash, now);
@@ -97,5 +99,56 @@ export async function resetClinicSample(
       clinicStaff: { create: { clinicId: clinic.id, role: "DOCTOR" } },
     },
   });
-  return doctor.id;
+
+  // 가상 코치: 두 환자 담당, 환자 1과의 대화 몇 개 (마지막은 읽지 않은 약 관련 문의)
+  await db.user.deleteMany({
+    where: { email: CLINIC_SAMPLE.coachEmail, isSample: true },
+  });
+  const coach = await db.user.create({
+    data: {
+      email: CLINIC_SAMPLE.coachEmail,
+      displayName: CLINIC_SAMPLE.coachName,
+      passwordHash,
+      isSample: true,
+      coach: { create: { specialty: "NUTRITION" } },
+    },
+  });
+  const patient2 = await db.user.findUniqueOrThrow({
+    where: { email: CLINIC_SAMPLE.patient2Email },
+  });
+  await db.careEnrollment.updateMany({
+    where: { userId: { in: [patient1, patient2.id] } },
+    data: { coachId: coach.id },
+  });
+  const at = (daysAgo: number, time: string) =>
+    kstDateTime(addDaysIso(today, -daysAgo), time);
+  await db.coachMessage.createMany({
+    data: [
+      {
+        patientId: patient1,
+        senderId: patient1,
+        sender: "PATIENT",
+        body: "주사 맞은 다음 날은 속이 메스꺼워서 점심을 거의 못 먹어요.",
+        createdAt: at(3, "13:10"),
+        readAt: at(3, "15:00"),
+      },
+      {
+        patientId: patient1,
+        senderId: coach.id,
+        sender: "COACH",
+        body: "그날은 한 번에 많이 드시기보다 두부·달걀처럼 부드러운 단백질을 조금씩 나눠 드셔 보세요. 기름진 음식은 잠시 줄이고요.",
+        createdAt: at(3, "15:02"),
+        readAt: at(3, "18:00"),
+      },
+      {
+        patientId: patient1,
+        senderId: patient1,
+        sender: "PATIENT",
+        body: "다음 주에 용량을 올려도 괜찮을까요? 아직 속이 좀 불편해요.",
+        medicationQuestion: true,
+        createdAt: at(0, "08:20"),
+      },
+    ],
+  });
+  return { doctorId: doctor.id, coachId: coach.id };
 }

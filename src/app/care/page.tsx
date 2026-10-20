@@ -28,6 +28,7 @@ import {
   refreshAlerts,
 } from "@/features/care/service";
 import { requireEnrollment } from "@/features/care/session";
+import { unreadForPatient } from "@/features/coaching/service";
 import { routes } from "@/lib/routes";
 import { db } from "@/server/db";
 
@@ -84,6 +85,7 @@ export default async function CareHomePage() {
       ),
     ],
   );
+  const unread = await unreadForPatient(db, user.id);
   const schedule = doseSchedule(e.drug, e.startDate, doses, today);
   const site = suggestNextSite(doses);
   const todayCheckIn = checkIns[0]?.date === today ? checkIns[0] : null;
@@ -170,6 +172,12 @@ export default async function CareHomePage() {
           )}
         </Card>
       </Section>
+
+      {unread > 0 && (
+        <ButtonLink href={routes.careCoach}>
+          💬 코치의 새 메시지 {unread}개
+        </ButtonLink>
+      )}
 
       <Section title="혈당" href={routes.careGlucose}>
         <Card className="flex flex-col gap-2">

@@ -160,6 +160,7 @@ export async function deleteCareData(db: Db, userId: string): Promise<void> {
   await db.doseLog.deleteMany({ where });
   await db.aiUsage.deleteMany({ where });
   await db.clinicVisit.deleteMany({ where: { patientId: userId } });
+  await db.coachMessage.deleteMany({ where: { patientId: userId } });
   await db.careEnrollment.deleteMany({ where });
 }
 

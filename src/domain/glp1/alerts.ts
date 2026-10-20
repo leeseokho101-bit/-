@@ -13,6 +13,8 @@ export const ALERT_KINDS = [
   "LOW_GLUCOSE",
   "SEVERE_LOW_GLUCOSE",
   "MISSED_DOSES",
+  // 코치가 의원 확인을 요청 (규칙이 아니라 코치가 직접 만든다)
+  "COACH_REFERRAL",
 ] as const;
 export type AlertKind = (typeof ALERT_KINDS)[number];
 

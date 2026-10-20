@@ -32,9 +32,9 @@ npm run dev                 # http://localhost:3000
 
 | 종류             | 개수 | 내용                                                                                               |
 | ---------------- | ---- | -------------------------------------------------------------------------------------------------- |
-| 단위 (Vitest)    | 282  | 분석 엔진 경계값·가상 사용자 A~E·결정성, 우선순위, 설명 문구·금지 표현, 12주 계획, 입력 검증, 인증 |
-| DB 통합          | 33   | 스키마·cascade 삭제, 분석 저장·입력 해시, 설명 재사용, 12주 계획·체크                              |
-| E2E (Playwright) | 19   | 가입→입력→분석→결과→계획→체크→대시보드→삭제, 입력 오류, 보안, 접근성(axe)                          |
+| 단위 (Vitest)    | 290  | 분석 엔진 경계값·가상 사용자 A~E·결정성, 우선순위, 설명 문구·금지 표현, 12주 계획, 입력 검증, 인증 |
+| DB 통합          | 38   | 스키마·cascade 삭제, 분석 저장·입력 해시, 설명 재사용, 12주 계획·체크                              |
+| E2E (Playwright) | 21   | 가입→입력→분석→결과→계획→체크→대시보드→삭제, 입력 오류, 보안, 접근성(axe)                          |
 
 GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄워 전체를 실행합니다.
 
@@ -63,6 +63,7 @@ GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄�
 | `npm run db:migrate`   | Prisma 마이그레이션 (STEP 3~)                                 |
 | `npm run db:seed`      | 가상 사용자 A~E 생성 (STEP 5~, 개발 DB 전용)                  |
 | `npm run clinic:staff` | 의원·의료진 계정 만들기 (운영자 전용, 임시 비밀번호 1회 표시) |
+| `npm run coach:add`    | 코치 계정 만들기 (운영자 전용, 임시 비밀번호 1회 표시)        |
 
 ## 진행 상황
 
@@ -82,6 +83,7 @@ GitHub Actions(`.github/workflows/ci.yml`)가 push·PR마다 PostgreSQL을 띄�
 - [x] 추가: 건강검진 결과표 사진 판독, 공단·검진센터 연동 틀 (`docs/CHECKUP_IMPORT.md`)
 - [x] GLP-1 케어 환자 앱 (`/care`) — 투약 기록·다음 투약일·주사 부위 순환, CGM 대시보드(TIR·식후 반응), 식사 기록(사진 추정), 부작용 체크인·위험 신호, 약물 반응 타임라인 (`docs/ARCHITECTURE.md` §5.8)
 - [x] 의사 대시보드 (`/clinic`) — 공유 동의 환자 목록·이상 알림, 내원 전 1장 리포트(AGP·부작용·복용률·참고 지표, 인쇄) (`docs/ARCHITECTURE.md` §5.9). 의료진 계정: `npm run clinic:staff`
+- [x] 코칭 센터 (`/coach`) — 환자 1:1 채팅(`/care/coach`), 코칭 범위 제한(약·용량 표현 차단), 주간 피드백 초안, 담당 의원 확인 요청 (`docs/ARCHITECTURE.md` §5.10). 코치 계정: `npm run coach:add`
 - [x] 추가: 매일 걸음수·운동 기록 → 운동 반영 예상 생체나이 (`/activity`, `docs/RULES_REFERENCE.md` §6.6)
 
 > ⚠️ 본 서비스는 의료행위(진단·처방)를 하지 않습니다. 결과는 건강관리 참고용입니다.
