@@ -5,7 +5,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { domainContent } from "@/content/domains";
 import { sampleUsers } from "@/dev/samples";
 import { CARE_SAMPLE } from "@/dev/care-sample";
-import { loginAsCareSample, loginAsSample } from "@/features/dev/actions";
+import { CLINIC_SAMPLE } from "@/dev/clinic-sample";
+import {
+  loginAsCareSample,
+  loginAsClinicSample,
+  loginAsSample,
+} from "@/features/dev/actions";
 
 export const metadata = { title: "샘플 데이터 (개발용)" };
 
@@ -67,6 +72,31 @@ export default function DevSamplesPage() {
             className={`${buttonBase} bg-primary text-primary-foreground w-full`}
           >
             케어 가상 환자로 시작하기
+          </button>
+        </form>
+      </Card>
+      <Card className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-full text-lg font-bold">
+            🩺
+          </span>
+          <div>
+            <p className="font-bold">
+              {CLINIC_SAMPLE.doctorName} (의사 대시보드)
+            </p>
+            <p className="text-muted text-xs">{CLINIC_SAMPLE.doctorEmail}</p>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed">
+          가상 의원({CARE_SAMPLE.clinicCode})의 의사 계정이에요. 위 케어 가상
+          환자와, 투약·체크인이 끊긴 가상 환자 2를 함께 다시 만들어요.
+        </p>
+        <form action={loginAsClinicSample}>
+          <button
+            type="submit"
+            className={`${buttonBase} bg-primary text-primary-foreground w-full`}
+          >
+            가상 의사로 시작하기
           </button>
         </form>
       </Card>

@@ -1,6 +1,6 @@
 export function SiteFooter() {
   return (
-    <footer className="border-border text-muted border-t px-5 py-6 text-center text-xs leading-relaxed">
+    <footer className="border-border text-muted border-t px-5 py-6 text-center text-xs leading-relaxed print:hidden">
       <p>
         본 서비스의 결과는 건강관리 참고용이며 의학적 진단이 아닙니다.
         <br />

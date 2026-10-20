@@ -47,7 +47,7 @@ export function AlertList({
       )}
       <p className="text-xs leading-relaxed opacity-80">
         {shareWithClinic && clinicName
-          ? "의원 공유에 동의하셔서 이 신호가 기록되었어요. 의원용 화면이 열리면 담당 의료진도 볼 수 있어요."
+          ? "의원 공유에 동의하셔서 이 신호가 담당 의료진 화면에도 표시돼요. 급하면 기다리지 말고 직접 연락해 주세요."
           : "이 신호는 내 기록에만 남아요. 담당 의원에는 직접 연락해 주세요."}{" "}
         <Link href={routes.careCheckIn} className="underline">
           체크인 보기

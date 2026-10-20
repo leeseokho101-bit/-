@@ -39,7 +39,17 @@ export async function login(
   }
   await createSession(user.id);
   logger.info("login", { userId: user.id });
-  redirect(safeRedirectPath(formData.get("next"), routes.dashboard));
+  // 의료진 계정은 기본으로 의사 대시보드로
+  const isStaff = !!(await db.clinicStaff.findUnique({
+    where: { userId: user.id },
+    select: { userId: true },
+  }));
+  redirect(
+    safeRedirectPath(
+      formData.get("next"),
+      isStaff ? routes.clinic : routes.dashboard,
+    ),
+  );
 }
 
 export async function signup(

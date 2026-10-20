@@ -9,6 +9,7 @@ export default async function globalTeardown() {
     await db.user.deleteMany({
       where: { email: { startsWith: "e2e-", endsWith: "@example.invalid" } },
     });
+    await db.clinic.deleteMany({ where: { code: { startsWith: "E2E-" } } });
   } finally {
     await db.$disconnect();
   }

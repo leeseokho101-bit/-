@@ -3,6 +3,7 @@
 import { notFound, redirect } from "next/navigation";
 import { sampleUsers, SAMPLE_PASSWORD } from "@/dev/samples";
 import { resetCareSample } from "@/dev/care-sample";
+import { resetClinicSample } from "@/dev/clinic-sample";
 import { resetSampleUser } from "@/dev/seed-sample";
 import { assessmentStepPath, routes } from "@/lib/routes";
 import { hashPassword } from "@/server/auth/password";
@@ -36,4 +37,17 @@ export async function loginAsCareSample(): Promise<void> {
   await createSession(userId);
   logger.info("dev care sample login", { userId });
   redirect(routes.care);
+}
+
+/** 개발 전용: 가상 의원(가상 환자 2명 포함)을 다시 만들고 가상 의사로 로그인한다 */
+export async function loginAsClinicSample(): Promise<void> {
+  if (!isDevelopment()) notFound();
+  const userId = await resetClinicSample(
+    db,
+    await hashPassword(SAMPLE_PASSWORD),
+  );
+  await deleteSession();
+  await createSession(userId);
+  logger.info("dev clinic sample login", { userId });
+  redirect(routes.clinic);
 }

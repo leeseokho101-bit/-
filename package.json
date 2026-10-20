@@ -22,7 +22,8 @@
     "test:e2e": "playwright test",
     "vercel-build": "node scripts/deploy-build.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "bioage:reference": "tsx --tsconfig tsconfig.json scripts/bio-age-reference/build.ts"
+    "bioage:reference": "tsx --tsconfig tsconfig.json scripts/bio-age-reference/build.ts",
+    "clinic:staff": "tsx --tsconfig tsconfig.json scripts/clinic-staff.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",

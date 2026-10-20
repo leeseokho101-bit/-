@@ -21,6 +21,9 @@
   --range-in: #1a7fa6;
   --range-high: #e08a3c;
   --range-very-high: #9a4a0c;
+  /* AGP 분포 띠 (같은 색상의 밝기 단계: 5–95 → 25–75 → 중앙값 선 chart-1) */
+  --agp-outer: #d8eaf2;
+  --agp-inner: #93c4da;
 }
 
 @theme inline {
@@ -38,6 +41,8 @@
   --color-range-in: var(--range-in);
   --color-range-high: var(--range-high);
   --color-range-very-high: var(--range-very-high);
+  --color-agp-outer: var(--agp-outer);
+  --color-agp-inner: var(--agp-inner);
   --font-sans:
     "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
     system-ui, sans-serif;
@@ -53,4 +58,18 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   word-break: keep-all;
+}
+
+/* 내원 전 1장 리포트 인쇄: 머리글·메뉴·버튼은 숨기고 한 장에 담는다 */
+@media print {
+  html {
+    font-size: 12px;
+  }
+  body {
+    background: #fff;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
 }

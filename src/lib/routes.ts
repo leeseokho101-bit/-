@@ -24,6 +24,7 @@ export const routes = {
   careCheckIn: "/care/check-in",
   careResponse: "/care/response",
   careSettings: "/care/settings",
+  clinic: "/clinic",
   mypage: "/mypage",
   devSamples: "/dev/samples",
 } as const;
@@ -103,3 +104,8 @@ export const careTabs = [
   { href: routes.careMeals, label: "식사", icon: "🍚" },
   { href: routes.careCheckIn, label: "체크인", icon: "✓" },
 ] as const;
+
+/** 의사 대시보드 환자 리포트 경로. 환자 ID(추측 불가능한 cuid)만 담고, 접근 시 의원·공유 동의를 확인한다 */
+export function clinicPatientPath(patientId: string): string {
+  return `${routes.clinic}/patients/${patientId}`;
+}

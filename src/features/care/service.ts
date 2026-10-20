@@ -61,6 +61,8 @@ export type Enrollment = {
   shareWithClinic: boolean;
   allowResearch: boolean;
   allowPharmaStats: boolean;
+  /** 의원이 정한 다음 내원 예정일 */
+  nextVisitOn: string | null;
 };
 
 export async function getEnrollment(
@@ -82,6 +84,7 @@ export async function getEnrollment(
     shareWithClinic: row.shareWithClinic,
     allowResearch: row.allowResearch,
     allowPharmaStats: row.allowPharmaStats,
+    nextVisitOn: row.nextVisitOn ? isoOf(row.nextVisitOn) : null,
   };
 }
 
@@ -156,6 +159,7 @@ export async function deleteCareData(db: Db, userId: string): Promise<void> {
   await db.glucoseReading.deleteMany({ where });
   await db.doseLog.deleteMany({ where });
   await db.aiUsage.deleteMany({ where });
+  await db.clinicVisit.deleteMany({ where: { patientId: userId } });
   await db.careEnrollment.deleteMany({ where });
 }
 

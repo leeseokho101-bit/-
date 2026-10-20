@@ -48,6 +48,8 @@ model User {
   checkIns       SymptomCheckIn[]
   careAlerts     CareAlert[]
   aiUsages       AiUsage[]
+  clinicStaff    ClinicStaff?
+  clinicVisits   ClinicVisit[]
 
   @@map("users")
 }
@@ -347,6 +349,8 @@ model Clinic {
   createdAt DateTime @default(now())
 
   enrollments CareEnrollment[]
+  staff       ClinicStaff[]
+  visits      ClinicVisit[]
 
   @@map("clinics")
 }
@@ -370,6 +374,9 @@ model CareEnrollment {
   shareWithClinic  Boolean   @default(false)
   allowResearch    Boolean   @default(false)
   allowPharmaStats Boolean   @default(false)
+  /// 의원이 입력하는 값 — 다음 내원 예정일, 의원 차트번호(EMR과 맞춰 보기 위한 식별용)
+  nextVisitOn      DateTime? @db.Date
+  chartNo          String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -504,8 +511,9 @@ model CareAlert {
   /// 같은 신호의 중복 기록 방지 키 (예: 해당 날짜)
   dedupeKey      String
   detectedAt     DateTime      @default(now())
-  /// 의원·코치가 확인한 시각 (향후)
+  /// 의원·코치가 확인한 시각과 확인한 의료진 (ClinicStaff.userId)
   acknowledgedAt DateTime?
+  acknowledgedBy String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -535,4 +543,58 @@ model AiUsage {
 
   @@index([userId, feature, createdAt])
   @@map("ai_usages")
+}
+
+// ─────────────────────────────── 의사 대시보드 ───────────────────────────────
+// docs/ARCHITECTURE.md §5.9. 의료진은 자기 의원에 연결되고 "의원 공유"에 동의한 환자만 본다.
+
+/// 의원 소속 의료진 계정. 일반 가입으로는 만들 수 없고 운영 스크립트(npm run clinic:staff)로만 만든다.
+model ClinicStaff {
+  userId    String    @id
+  clinicId  String
+  role      StaffRole @default(DOCTOR)
+  createdAt DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
+  @@map("clinic_staff")
+}
+
+enum StaffRole {
+  DOCTOR
+  NURSE
+}
+
+/// 내원 기록 — "지난 방문 이후" 리포트 기간의 기준
+model ClinicVisit {
+  id           String   @id @default(cuid())
+  clinicId     String
+  patientId    String
+  visitedOn    DateTime @db.Date
+  recordedById String?
+  createdAt    DateTime @default(now())
+
+  clinic  Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient User   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, patientId, visitedOn])
+  @@index([patientId, visitedOn])
+  @@map("clinic_visits")
+}
+
+/// 의료진의 환자 정보 열람·변경 감사 기록. 건강정보 값은 담지 않는다 (ID와 행동만).
+model ClinicAccessLog {
+  id          String   @id @default(cuid())
+  staffUserId String
+  clinicId    String
+  patientId   String?
+  /// 예: "view-list", "view-report", "ack-alert", "record-visit"
+  action      String
+  createdAt   DateTime @default(now())
+
+  @@index([patientId, createdAt])
+  @@index([staffUserId, createdAt])
+  @@map("clinic_access_logs")
 }

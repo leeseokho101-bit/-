@@ -18,7 +18,7 @@ import {
 } from "@/domain/glp1/dosing";
 import { doseStepNumber, formatDose } from "@/domain/glp1/drugs";
 import { addDaysIso, DAY_MS, kstDayStart } from "@/domain/glp1/time";
-import { dueText, formatDateTime } from "@/features/care/format";
+import { dueText, formatDateTime, formatDay } from "@/features/care/format";
 import {
   latestGlucose,
   listCheckIns,
@@ -104,7 +104,9 @@ export default async function CareHomePage() {
         eyebrow={`${e.drug.ingredient} · ${formatDose(e.doseMg)}${step ? ` (${step}단계)` : ""}`}
         title={`${user.displayName}님, 오늘도 함께해요`}
         description={
-          e.clinic ? `${e.clinic.name}과 연결되어 있어요.` : undefined
+          e.clinic
+            ? `${e.clinic.name}과 연결되어 있어요.${e.nextVisitOn ? ` 다음 내원 예정일은 ${formatDay(e.nextVisitOn)}이에요.` : ""}`
+            : undefined
         }
       />
 
