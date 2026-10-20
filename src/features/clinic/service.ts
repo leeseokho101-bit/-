@@ -132,6 +132,8 @@ export type PatientRow = {
   lastCheckIn: string | null;
   lastVisit: string | null;
   nextVisitOn: string | null;
+  /** 환자가 기록한 치료 중단일 */
+  stoppedOn: string | null;
   flag: PatientFlag;
   reasons: FlagReason[];
 };
@@ -237,6 +239,7 @@ export async function listClinicPatients(
         lastCheckIn: lastCheckIn ? isoOf(lastCheckIn) : null,
         lastVisit: lastVisit ? isoOf(lastVisit) : null,
         nextVisitOn: r.nextVisitOn ? isoOf(r.nextVisitOn) : null,
+        stoppedOn: r.stoppedAt ? isoOf(r.stoppedAt) : null,
         flag,
         reasons,
       },

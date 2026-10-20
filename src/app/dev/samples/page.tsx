@@ -6,10 +6,12 @@ import { domainContent } from "@/content/domains";
 import { sampleUsers } from "@/dev/samples";
 import { CARE_SAMPLE } from "@/dev/care-sample";
 import { CLINIC_SAMPLE } from "@/dev/clinic-sample";
+import { PHARMA_SAMPLE } from "@/dev/pharma-sample";
 import {
   loginAsCareSample,
   loginAsClinicSample,
   loginAsCoachSample,
+  loginAsPharmaSample,
   loginAsSample,
 } from "@/features/dev/actions";
 
@@ -107,6 +109,31 @@ export default function DevSamplesPage() {
             className={`${buttonBase} border-border bg-surface w-full border`}
           >
             가상 코치({CLINIC_SAMPLE.coachEmail})로 시작하기
+          </button>
+        </form>
+      </Card>
+      <Card className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <span className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-full text-lg font-bold">
+            📊
+          </span>
+          <div>
+            <p className="font-bold">
+              {PHARMA_SAMPLE.memberName} (제약사 포털)
+            </p>
+            <p className="text-muted text-xs">{PHARMA_SAMPLE.memberEmail}</p>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed">
+          통계용 가상 의원 6곳(서울·경기·부산)과 가상 환자 40명을 다시 만들어요.
+          자사 제품은 터제파타이드로 설정돼 있어요.
+        </p>
+        <form action={loginAsPharmaSample}>
+          <button
+            type="submit"
+            className={`${buttonBase} bg-primary text-primary-foreground w-full`}
+          >
+            가상 제약사 담당자로 시작하기
           </button>
         </form>
       </Card>

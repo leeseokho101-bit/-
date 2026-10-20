@@ -196,3 +196,17 @@ export function mealFormSchema(today: string) {
   });
 }
 export type MealFormData = z.output<ReturnType<typeof mealFormSchema>>;
+
+/** 치료 중단 기록 (담당 의사와 상의 후). 날짜는 1년 전 ~ 오늘 */
+export function treatmentStopSchema(
+  today: string,
+  reasons: readonly [string, ...string[]],
+) {
+  return z.object({
+    date: isoDate.refine(
+      (d) => d >= addDaysIso(today, -365) && d <= today,
+      "날짜를 확인해 주세요.",
+    ),
+    reason: z.enum(reasons, { error: "이유를 골라 주세요." }),
+  });
+}

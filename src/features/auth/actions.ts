@@ -39,8 +39,8 @@ export async function login(
   }
   await createSession(user.id);
   logger.info("login", { userId: user.id });
-  // 의료진·코치 계정은 기본으로 각자의 화면으로
-  const [isStaff, isCoach] = await Promise.all([
+  // 의료진·코치·제약사 계정은 기본으로 각자의 화면으로
+  const [isStaff, isCoach, isPharma] = await Promise.all([
     db.clinicStaff.findUnique({
       where: { userId: user.id },
       select: { userId: true },
@@ -49,11 +49,21 @@ export async function login(
       where: { userId: user.id },
       select: { userId: true },
     }),
+    db.pharmaMember.findUnique({
+      where: { userId: user.id },
+      select: { userId: true },
+    }),
   ]);
   redirect(
     safeRedirectPath(
       formData.get("next"),
-      isStaff ? routes.clinic : isCoach ? routes.coach : routes.dashboard,
+      isStaff
+        ? routes.clinic
+        : isCoach
+          ? routes.coach
+          : isPharma
+            ? routes.pharma
+            : routes.dashboard,
     ),
   );
 }

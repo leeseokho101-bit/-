@@ -1,7 +1,7 @@
 /**
  * 의원·의료진 계정 만들기 (운영자 전용). 의료진 계정은 일반 가입으로 만들 수 없다.
  *
- *   npm run clinic:staff -- --clinic-code ABCD-1234 --clinic-name "○○내과의원" \
+ *   npm run clinic:staff -- --clinic-code ABCD-1234 --clinic-name "○○내과의원" --region 서울 \
  *     --email doctor@clinic.example --name "김의사" [--role DOCTOR|NURSE]
  *
  * - 의원 코드가 없으면 의원을 새로 만든다 (등록 QR 카드에 넣을 코드).
@@ -11,6 +11,7 @@
 import { PrismaClient } from "@prisma/client";
 import { randomBytes, scryptSync } from "node:crypto";
 import { parseArgs } from "node:util";
+import { isRegion, REGIONS } from "../src/domain/pharma/regions";
 
 // src/server/auth/password.ts 와 같은 형식 (server-only 모듈이라 여기서 직접 계산)
 function hashPassword(password: string): string {
@@ -27,6 +28,7 @@ async function main() {
       email: { type: "string" },
       name: { type: "string" },
       role: { type: "string", default: "DOCTOR" },
+      region: { type: "string" },
     },
   });
   const code = values["clinic-code"]?.trim().toUpperCase();
@@ -40,7 +42,14 @@ async function main() {
   }
   const db = new PrismaClient();
   try {
+    const region = values.region?.trim();
+    if (region && !isRegion(region))
+      throw new Error(
+        `--region 은 시·도 이름이어야 합니다: ${REGIONS.join(", ")}`,
+      );
     let clinic = await db.clinic.findUnique({ where: { code } });
+    if (clinic && region && clinic.region !== region)
+      clinic = await db.clinic.update({ where: { code }, data: { region } });
     if (!clinic) {
       if (!values["clinic-name"])
         throw new Error("새 의원에는 --clinic-name 이 필요합니다.");

@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { sampleUsers, SAMPLE_PASSWORD } from "@/dev/samples";
 import { resetCareSample } from "@/dev/care-sample";
 import { resetClinicSample } from "@/dev/clinic-sample";
+import { resetPharmaSample } from "@/dev/pharma-sample";
 import { resetSampleUser } from "@/dev/seed-sample";
 import { assessmentStepPath, routes } from "@/lib/routes";
 import { hashPassword } from "@/server/auth/password";
@@ -63,4 +64,17 @@ export async function loginAsCoachSample(): Promise<void> {
   await createSession(coachId);
   logger.info("dev coach sample login", { userId: coachId });
   redirect(routes.coach);
+}
+
+/** 개발 전용: 통계용 가상 의원·환자를 다시 만들고 가상 제약사 담당자로 로그인한다 */
+export async function loginAsPharmaSample(): Promise<void> {
+  if (!isDevelopment()) notFound();
+  const userId = await resetPharmaSample(
+    db,
+    await hashPassword(SAMPLE_PASSWORD),
+  );
+  await deleteSession();
+  await createSession(userId);
+  logger.info("dev pharma sample login", { userId });
+  redirect(routes.pharma);
 }

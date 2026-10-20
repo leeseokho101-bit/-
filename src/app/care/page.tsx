@@ -118,34 +118,49 @@ export default async function CareHomePage() {
         shareWithClinic={e.shareWithClinic}
       />
 
-      <Section title="다음 투약" href={routes.careDose} link="투약 기록">
-        <Card className="flex flex-col gap-3">
-          <p
-            className={`text-xl font-bold ${schedule.daysUntil < 0 ? "text-rose-800" : ""}`}
-          >
-            {dueText(schedule.daysUntil)}
+      {e.stopped ? (
+        <Card className="flex flex-col gap-2">
+          <p className="font-semibold">
+            {e.stopped.date}에 치료를 그만둔 것으로 기록했어요
           </p>
-          <p className="text-muted text-sm">
-            예정일 {schedule.nextDue} · {formatDose(e.doseMg)}
-            {e.drug.route === "INJECTION" &&
-              ` · 추천 부위: ${siteLabels[site]}`}
+          <p className="text-muted text-sm leading-relaxed">
+            투약 알림은 멈췄어요. 체중·식사·몸 상태 기록과 코치 상담은 계속할 수
+            있어요.
           </p>
-          {schedule.daysUntil < 0 && (
-            <p className="text-sm leading-relaxed">
-              이미 투약했다면 기록해 주세요. 놓쳤다면 다음 투약을 언제 할지 담당
-              의원에 물어보세요.
-            </p>
-          )}
-          <ButtonLink href={routes.careDose}>
-            {schedule.daysUntil <= 0 ? "투약 기록하기" : "투약 기록 보기"}
+          <ButtonLink href={routes.careDose} variant="secondary">
+            다시 시작했다면 바꾸기
           </ButtonLink>
         </Card>
-        {recentlyChanged && (
-          <p className="bg-primary/5 border-primary/20 rounded-xl border px-4 py-3 text-sm leading-relaxed">
-            용량을 바꾼 지 {onDose + 1}일째예요. {escalationSupport}
-          </p>
-        )}
-      </Section>
+      ) : (
+        <Section title="다음 투약" href={routes.careDose} link="투약 기록">
+          <Card className="flex flex-col gap-3">
+            <p
+              className={`text-xl font-bold ${schedule.daysUntil < 0 ? "text-rose-800" : ""}`}
+            >
+              {dueText(schedule.daysUntil)}
+            </p>
+            <p className="text-muted text-sm">
+              예정일 {schedule.nextDue} · {formatDose(e.doseMg)}
+              {e.drug.route === "INJECTION" &&
+                ` · 추천 부위: ${siteLabels[site]}`}
+            </p>
+            {schedule.daysUntil < 0 && (
+              <p className="text-sm leading-relaxed">
+                이미 투약했다면 기록해 주세요. 놓쳤다면 다음 투약을 언제 할지
+                담당 의원에 물어보세요.
+              </p>
+            )}
+            <ButtonLink href={routes.careDose}>
+              {schedule.daysUntil <= 0 ? "투약 기록하기" : "투약 기록 보기"}
+            </ButtonLink>
+          </Card>
+          {recentlyChanged && (
+            <p className="bg-primary/5 border-primary/20 rounded-xl border px-4 py-3 text-sm leading-relaxed">
+              용량을 바꾼 지 {onDose + 1}일째예요. {escalationSupport}
+            </p>
+          )}
+        </Section>
+      )}
 
       <Section
         title="오늘 체크인"

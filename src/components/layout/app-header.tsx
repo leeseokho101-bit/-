@@ -2,12 +2,14 @@ import Link from "next/link";
 import { routes } from "@/lib/routes";
 import { getCurrentStaff } from "@/features/clinic/session";
 import { getCurrentCoach } from "@/features/coaching/session";
+import { getCurrentPharma } from "@/features/pharma/session";
 import { getCurrentUser } from "@/server/auth/session";
 
 export async function AppHeader() {
   const user = await getCurrentUser();
   const staff = user ? await getCurrentStaff() : null;
   const coach = user && !staff ? await getCurrentCoach() : null;
+  const pharma = user && !staff && !coach ? await getCurrentPharma() : null;
   return (
     <header className="border-border bg-surface/90 sticky top-0 z-10 border-b backdrop-blur print:hidden">
       <div className="mx-auto flex h-14 w-full max-w-md items-center justify-between px-5">
@@ -27,6 +29,10 @@ export async function AppHeader() {
               ) : coach ? (
                 <Link href={routes.coach} className="hover:text-foreground">
                   코칭센터
+                </Link>
+              ) : pharma ? (
+                <Link href={routes.pharma} className="hover:text-foreground">
+                  제약사 포털
                 </Link>
               ) : (
                 <>

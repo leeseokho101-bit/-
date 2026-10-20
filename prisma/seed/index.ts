@@ -5,6 +5,7 @@
 import { PrismaClient } from "@prisma/client";
 import { randomBytes, scryptSync } from "node:crypto";
 import { CLINIC_SAMPLE, resetClinicSample } from "../../src/dev/clinic-sample";
+import { PHARMA_SAMPLE, resetPharmaSample } from "../../src/dev/pharma-sample";
 import { sampleUsers, SAMPLE_PASSWORD } from "../../src/dev/samples";
 import {
   assertSampleEnvironment,
@@ -30,6 +31,10 @@ async function main() {
     await resetClinicSample(db, passwordHash);
     console.log(
       `✓ GLP-1 케어 가상 의원 — 의사 ${CLINIC_SAMPLE.doctorEmail}, 코치 ${CLINIC_SAMPLE.coachEmail}, 환자 2명`,
+    );
+    await resetPharmaSample(db, passwordHash);
+    console.log(
+      `✓ 제약사 포털 가상 담당자 ${PHARMA_SAMPLE.memberEmail} (통계용 가상 환자 40명)`,
     );
     console.log(`\n샘플 계정 비밀번호: ${SAMPLE_PASSWORD} (개발 환경 전용)`);
   } finally {

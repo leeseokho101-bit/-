@@ -12,6 +12,7 @@ import { deleteDoseAction } from "@/features/care/actions";
 import { CurrentDoseForm, DoseForm } from "@/features/care/dose-forms";
 import { dueText, formatDateTime } from "@/features/care/format";
 import { CARE_EDITABLE_DAYS } from "@/features/care/schemas";
+import { TreatmentStopForm } from "@/features/care/stop-form";
 import { listDoses } from "@/features/care/service";
 import { requireEnrollment } from "@/features/care/session";
 import { routes } from "@/lib/routes";
@@ -79,6 +80,18 @@ export default async function CareDosePage() {
           쓰여요. 용량은 담당 의사가 정해요.
         </p>
         <CurrentDoseForm drug={e.drug} doseMg={e.doseMg} today={today} />
+      </details>
+
+      <details
+        className="border-border bg-surface rounded-2xl border p-5"
+        open={!!e.stopped}
+      >
+        <summary className="cursor-pointer font-semibold">
+          {e.stopped ? "치료 중단으로 기록됨" : "치료를 그만두셨나요?"}
+        </summary>
+        <div className="mt-3">
+          <TreatmentStopForm stopped={e.stopped} today={today} />
+        </div>
       </details>
 
       <section className="flex flex-col gap-3" aria-labelledby="dose-history">

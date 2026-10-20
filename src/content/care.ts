@@ -182,3 +182,15 @@ export const escalationSupport =
 
 export const glucoseNote =
   "목표 범위(70~180mg/dL)와 목표 비율은 당뇨 관리에 쓰는 국제 합의 기준을 참고로 보여드려요. 나에게 맞는 목표는 담당 의사와 상의하세요.";
+
+export const stopReasonLabels = {
+  SIDE_EFFECTS: "부작용이 힘들어서",
+  COST: "비용 부담",
+  INCONVENIENCE: "투약·관리가 번거로워서",
+  GOAL_REACHED: "목표 체중·혈당에 도달",
+  DOCTOR_ADVICE: "담당 의사의 판단",
+  OTHER: "기타",
+} as const;
+
+export const stopNote =
+  "담당 의사와 상의해 치료를 그만두셨다면 기록해 주세요. 투약 알림과 누락 알림이 멈춰요. 다시 시작하면 언제든 되돌릴 수 있어요. 그만둘지 고민 중이라면 먼저 담당 의사와 상의하세요.";

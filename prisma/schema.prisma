@@ -52,6 +52,7 @@ model User {
   clinicVisits   ClinicVisit[]
   coach          Coach?
   coachMessages  CoachMessage[]
+  pharmaMember   PharmaMember?
 
   @@map("users")
 }
@@ -346,6 +347,8 @@ model Clinic {
   /// QR 카드에 적힌 연결 코드 (예: "DEMO-0001")
   code      String   @unique
   name      String
+  /// 시·도 (src/domain/pharma/regions.ts) — 제약사 포털 지역 집계용
+  region    String?
   /// 개발·데모용 가상 의원 여부
   isSample  Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -359,30 +362,33 @@ model Clinic {
 
 /// 처방 동반 관리 프로그램 등록 (사용자당 1개)
 model CareEnrollment {
-  userId           String    @id
+  userId           String      @id
   clinicId         String?
   linkedAt         DateTime?
   /// 약 카탈로그 코드 (src/domain/glp1/drugs.ts)
   drugCode         String
   /// 담당 의사가 정한 현재 용량 (mg). 앱은 용량을 제안하지 않고 기록만 한다.
-  currentDoseMg    Decimal   @db.Decimal(5, 2)
+  currentDoseMg    Decimal     @db.Decimal(5, 2)
   /// 현재 용량을 시작한 날 (한국 날짜) — 증량 직후 안내에 사용
-  doseSince        DateTime  @db.Date
+  doseSince        DateTime    @db.Date
   /// 첫 투약일 (한국 날짜)
-  startDate        DateTime  @db.Date
+  startDate        DateTime    @db.Date
   /// 항목별 동의 (서비스 이용은 필수, 나머지는 선택)
   consentVersion   String
   consentAt        DateTime
-  shareWithClinic  Boolean   @default(false)
-  allowResearch    Boolean   @default(false)
-  allowPharmaStats Boolean   @default(false)
+  shareWithClinic  Boolean     @default(false)
+  allowResearch    Boolean     @default(false)
+  allowPharmaStats Boolean     @default(false)
   /// 의원이 입력하는 값 — 다음 내원 예정일, 의원 차트번호(EMR과 맞춰 보기 위한 식별용)
-  nextVisitOn      DateTime? @db.Date
+  nextVisitOn      DateTime?   @db.Date
   chartNo          String?
   /// 담당 코치 (Coach.userId). 등록 시 담당 환자가 가장 적은 코치로 자동 배정
   coachId          String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  /// 환자가 기록한 치료 중단 (담당 의사와 상의 후) — 지속 복용 분석·알림 중지에 사용
+  stoppedAt        DateTime?   @db.Date
+  stopReason       StopReason?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   clinic Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
@@ -665,4 +671,53 @@ model CoachAccessLog {
   @@index([patientId, createdAt])
   @@index([coachUserId, createdAt])
   @@map("coach_access_logs")
+}
+
+enum StopReason {
+  SIDE_EFFECTS
+  COST
+  GOAL_REACHED
+  DOCTOR_ADVICE
+  INCONVENIENCE
+  OTHER
+}
+
+// ─────────────────────────────── 제약사 포털 ───────────────────────────────
+// docs/ARCHITECTURE.md §5.11. "제약사 통계 제공"에 동의한 환자의 집계 통계만. 개별 의원 처방량·개별 환자 정보는 노출하지 않는다.
+
+/// 제약사 (파트너). drugCodes = 지속 복용 분석을 볼 수 있는 자사 제품 (src/domain/glp1/drugs.ts 코드)
+model PharmaOrg {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  drugCodes String[]
+  createdAt DateTime @default(now())
+
+  members PharmaMember[]
+
+  @@map("pharma_orgs")
+}
+
+/// 제약사 포털 계정. 운영 스크립트(npm run pharma:add)로만 만든다.
+model PharmaMember {
+  userId    String   @id
+  orgId     String
+  createdAt DateTime @default(now())
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  PharmaOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("pharma_members")
+}
+
+/// 제약사 포털 열람 감사 기록 (환자·의원 ID는 담지 않는다)
+model PharmaAccessLog {
+  id           String   @id @default(cuid())
+  memberUserId String
+  orgId        String
+  action       String
+  createdAt    DateTime @default(now())
+
+  @@index([orgId, createdAt])
+  @@map("pharma_access_logs")
 }

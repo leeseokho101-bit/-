@@ -20,6 +20,7 @@ import {
   enrollFormSchema,
   mealFormSchema,
   MEAL_PHOTO_DAILY_LIMIT,
+  treatmentStopSchema,
 } from "./schemas";
 import {
   countAiUsageToday,
@@ -34,6 +35,8 @@ import {
   saveDose,
   saveEnrollment,
   saveMeal,
+  saveTreatmentStop,
+  STOP_REASONS,
 } from "./service";
 import { autoAssignCoach } from "@/features/coaching/service";
 import { requireEnrollment } from "./session";
@@ -323,4 +326,35 @@ export async function deleteCareDataAction(
   logger.info("care data deleted", { userId: user.id });
   revalidateCare();
   redirect(routes.careStart);
+}
+
+/** 치료 중단 기록 — 투약 알림·누락 알림이 멈추고, 동의한 경우 지속 복용 통계에 사유가 반영된다 */
+export async function treatmentStopAction(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { user, today } = await requireEnrollment(routes.careDose);
+  if (formData.get("resume") === "1") {
+    await saveTreatmentStop(db, user.id, null);
+    revalidateCare();
+    return {
+      notice: "다시 시작한 것으로 바꿨어요. 투약 기록을 이어서 남겨 주세요.",
+    };
+  }
+  const parsed = treatmentStopSchema(today, STOP_REASONS).safeParse(
+    formDataToObject(formData),
+  );
+  if (!parsed.success)
+    return {
+      message: INVALID,
+      fieldErrors: toFieldErrors(parsed.error),
+      values: echoValues(formData),
+    };
+  await saveTreatmentStop(db, user.id, {
+    date: parsed.data.date,
+    reason: parsed.data.reason as (typeof STOP_REASONS)[number],
+  });
+  logger.info("care treatment stop recorded", { userId: user.id });
+  revalidateCare();
+  return { notice: "치료 중단을 기록했어요. 투약 알림을 멈출게요." };
 }

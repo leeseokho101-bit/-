@@ -177,6 +177,11 @@ export default async function ClinicPage() {
                     </td>
                     <td className="px-3 py-2">
                       <FlagBadge flag={p.flag} />
+                      {p.stoppedOn && (
+                        <span className="mt-1 block text-xs font-semibold">
+                          치료 중단 기록 ({formatDay(p.stoppedOn)})
+                        </span>
+                      )}
                       {p.reasons.length > 0 && (
                         <span className="text-muted mt-1 block text-xs">
                           {p.reasons.map(reasonText).join(" · ")}

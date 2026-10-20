@@ -27,6 +27,7 @@ export const routes = {
   careCoach: "/care/coach",
   clinic: "/clinic",
   coach: "/coach",
+  pharma: "/pharma",
   mypage: "/mypage",
   devSamples: "/dev/samples",
 } as const;

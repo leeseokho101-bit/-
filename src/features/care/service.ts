@@ -63,7 +63,19 @@ export type Enrollment = {
   allowPharmaStats: boolean;
   /** 의원이 정한 다음 내원 예정일 */
   nextVisitOn: string | null;
+  /** 환자가 기록한 치료 중단 */
+  stopped: { date: string; reason: StopReasonCode } | null;
 };
+
+export const STOP_REASONS = [
+  "SIDE_EFFECTS",
+  "COST",
+  "INCONVENIENCE",
+  "GOAL_REACHED",
+  "DOCTOR_ADVICE",
+  "OTHER",
+] as const;
+export type StopReasonCode = (typeof STOP_REASONS)[number];
 
 export async function getEnrollment(
   db: Db,
@@ -85,6 +97,10 @@ export async function getEnrollment(
     allowResearch: row.allowResearch,
     allowPharmaStats: row.allowPharmaStats,
     nextVisitOn: row.nextVisitOn ? isoOf(row.nextVisitOn) : null,
+    stopped:
+      row.stoppedAt && row.stopReason
+        ? { date: isoOf(row.stoppedAt), reason: row.stopReason }
+        : null,
   };
 }
 
@@ -147,6 +163,20 @@ export async function saveCurrentDose(
   await db.careEnrollment.update({
     where: { userId },
     data: { currentDoseMg: data.doseMg, doseSince: dateOf(data.doseSince) },
+  });
+}
+
+/** 치료 중단 기록 / 다시 시작 (null) */
+export async function saveTreatmentStop(
+  db: Db,
+  userId: string,
+  stop: { date: string; reason: StopReasonCode } | null,
+): Promise<void> {
+  await db.careEnrollment.update({
+    where: { userId },
+    data: stop
+      ? { stoppedAt: dateOf(stop.date), stopReason: stop.reason }
+      : { stoppedAt: null, stopReason: null },
   });
 }
 
@@ -433,7 +463,8 @@ export async function refreshAlerts(
     lowEvents: lowEvents(glucose),
     missed: {
       count: missed,
-      alert: isMissedAlert(drug, missed),
+      // 치료 중단을 기록했으면 투약 누락 알림을 만들지 않는다
+      alert: !enrollment.stopped && isMissedAlert(drug, missed),
       key: doseSchedule(drug, startDate, doses, today).nextDue,
     },
   });
