@@ -1,4 +1,5 @@
 import { PageContainer } from "@/components/layout/page-container";
+import { isPreviewDemo } from "@/lib/demo-mode";
 import { buttonBase } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -25,6 +26,12 @@ export default function DevSamplesPage() {
         title="가상 사용자 불러오기"
         description="모든 데이터는 가상의 인물입니다. 선택하면 해당 사용자의 데이터를 처음 상태로 되돌린 뒤 그 사용자로 로그인합니다."
       />
+      {isPreviewDemo() && (
+        <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950">
+          미리보기(데모) 배포예요. 여러 사람이 같은 가상 계정을 쓰면 누를 때마다
+          처음 상태로 되돌아가요. 실제 건강정보는 입력하지 마세요.
+        </p>
+      )}
       {sampleUsers.map((s) => (
         <Card key={s.id} className="flex flex-col gap-3">
           <div className="flex items-center gap-3">

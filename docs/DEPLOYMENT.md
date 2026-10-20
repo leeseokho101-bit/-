@@ -59,7 +59,21 @@ npm run smoke -- https://<배포주소>
 - [ ] 결과 화면 하단 표시가 **"AI 설명"**인지 (API Key 설정 시) / "기본 설명"인지
 - [ ] Vercel 함수 로그에 이메일·건강 수치가 없는지 (사용자 ID만)
 
-## 4. 운영 시 주의
+## 4. 미리보기(Preview)에서 데모 계정으로 둘러보기
+
+브랜치를 push하면 Vercel이 미리보기 주소를 만든다. 미리보기에서 환자·의사·코치·제약사 화면을 가상 계정으로
+둘러보려면 아래를 **모두** 지킨다. 운영(Production) 배포에서는 이 설정과 관계없이 데모 기능이 꺼져 있다.
+
+1. Preview의 `DATABASE_URL`·`DIRECT_URL`이 **운영과 다른 Neon branch**를 가리키는지 확인
+   (같은 DB면 가상 환자가 운영 통계·의사 화면에 섞인다 — 이 경우 켜지 말 것)
+2. Settings → Environment Variables → `DEMO_SAMPLES` = `on`, **Environment: Preview만** 체크
+3. 미리보기를 다시 배포(Deployments → 해당 배포 → Redeploy)
+4. 미리보기 주소 첫 화면의 "데모 계정으로 둘러보기" 또는 `/dev/samples`에서 역할을 골라 로그인
+   (가상 계정 비밀번호 `sample-password`)
+
+판단 코드: `src/lib/demo-mode.ts` (`NODE_ENV=production`이면 `VERCEL_ENV=preview` + `DEMO_SAMPLES=on`일 때만 허용).
+
+## 5. 운영 시 주의
 
 - **샘플 데이터**: `npm run db:seed`는 production에서 실행되지 않습니다. production DB에 가상 사용자를 넣지 마세요.
 - **스키마 변경**: `prisma migrate dev`로 마이그레이션 파일을 만들어 커밋하면, 다음 배포 때 `prisma migrate deploy`가 적용합니다.

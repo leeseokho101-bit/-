@@ -12,10 +12,11 @@ import {
   SURVEY_SCHEMA_VERSION,
   surveyAnswersSchema,
 } from "@/domain/health-snapshot/survey";
+import { isSampleDataAllowed } from "@/lib/demo-mode";
 import type { SampleUser } from "./samples";
 
 export function assertSampleEnvironment() {
-  if (process.env.NODE_ENV === "production") {
+  if (!isSampleDataAllowed()) {
     throw new Error("Sample data is disabled in production");
   }
 }

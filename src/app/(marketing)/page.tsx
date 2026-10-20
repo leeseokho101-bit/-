@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { LevelDots, StatusBadge } from "@/components/ui/status-badge";
 import { domainContent } from "@/content/domains";
 import { DOMAIN_CODES } from "@/domain/analysis/types";
+import { isSampleDataAllowed } from "@/lib/demo-mode";
 import { routes } from "@/lib/routes";
 
 const values = [
@@ -35,6 +36,11 @@ export default async function LandingPage({ searchParams }: PageProps<"/">) {
   const { deleted } = await searchParams;
   return (
     <PageContainer>
+      {isSampleDataAllowed() && (
+        <ButtonLink href={routes.devSamples} variant="secondary">
+          🧪 데모 계정으로 둘러보기 (환자·의사·코치·제약사)
+        </ButtonLink>
+      )}
       {deleted === "1" && (
         <p
           role="status"
