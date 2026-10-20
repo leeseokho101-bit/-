@@ -16,6 +16,9 @@ export async function AppHeader() {
         >
           {user ? (
             <>
+              <Link href={routes.care} className="hover:text-foreground">
+                케어
+              </Link>
               <Link href={routes.dashboard} className="hover:text-foreground">
                 대시보드
               </Link>

@@ -4,6 +4,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import { randomBytes, scryptSync } from "node:crypto";
+import { CARE_SAMPLE, resetCareSample } from "../../src/dev/care-sample";
 import { sampleUsers, SAMPLE_PASSWORD } from "../../src/dev/samples";
 import {
   assertSampleEnvironment,
@@ -26,6 +27,8 @@ async function main() {
       await resetSampleUser(db, sample, passwordHash);
       console.log(`✓ 가상 사용자 ${sample.id} (${sample.email})`);
     }
+    await resetCareSample(db, passwordHash);
+    console.log(`✓ GLP-1 케어 가상 환자 (${CARE_SAMPLE.email})`);
     console.log(`\n샘플 계정 비밀번호: ${SAMPLE_PASSWORD} (개발 환경 전용)`);
   } finally {
     await db.$disconnect();

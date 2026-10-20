@@ -41,6 +41,13 @@ model User {
   assessments    Assessment[]
   checkupImports CheckupImport[]
   activityLogs   ActivityLog[]
+  careEnrollment CareEnrollment?
+  doseLogs       DoseLog[]
+  glucose        GlucoseReading[]
+  meals          MealLog[]
+  checkIns       SymptomCheckIn[]
+  careAlerts     CareAlert[]
+  aiUsages       AiUsage[]
 
   @@map("users")
 }
@@ -324,4 +331,208 @@ model ActivityLog {
 
   @@unique([userId, date])
   @@map("activity_logs")
+}
+
+// ─────────────────────────────── GLP-1 · CGM 대사관리 (환자 앱) ───────────────────────────────
+// docs/ARCHITECTURE.md §5.8. 판정(알림 단계·위험 신호)은 src/domain/glp1 규칙만 결정한다.
+
+/// 참여 의원. 등록 QR 카드의 연결 코드로 환자와 의원을 잇는다.
+model Clinic {
+  id        String   @id @default(cuid())
+  /// QR 카드에 적힌 연결 코드 (예: "DEMO-0001")
+  code      String   @unique
+  name      String
+  /// 개발·데모용 가상 의원 여부
+  isSample  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  enrollments CareEnrollment[]
+
+  @@map("clinics")
+}
+
+/// 처방 동반 관리 프로그램 등록 (사용자당 1개)
+model CareEnrollment {
+  userId           String    @id
+  clinicId         String?
+  linkedAt         DateTime?
+  /// 약 카탈로그 코드 (src/domain/glp1/drugs.ts)
+  drugCode         String
+  /// 담당 의사가 정한 현재 용량 (mg). 앱은 용량을 제안하지 않고 기록만 한다.
+  currentDoseMg    Decimal   @db.Decimal(5, 2)
+  /// 현재 용량을 시작한 날 (한국 날짜) — 증량 직후 안내에 사용
+  doseSince        DateTime  @db.Date
+  /// 첫 투약일 (한국 날짜)
+  startDate        DateTime  @db.Date
+  /// 항목별 동의 (서비스 이용은 필수, 나머지는 선택)
+  consentVersion   String
+  consentAt        DateTime
+  shareWithClinic  Boolean   @default(false)
+  allowResearch    Boolean   @default(false)
+  allowPharmaStats Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+
+  @@index([clinicId])
+  @@map("care_enrollments")
+}
+
+/// 투약 기록 (투약함 / 놓침)
+model DoseLog {
+  id        String         @id @default(cuid())
+  userId    String
+  takenAt   DateTime
+  status    DoseStatus
+  doseMg    Decimal        @db.Decimal(5, 2)
+  /// 주사 부위 (먹는 약·놓침이면 없음)
+  site      InjectionSite?
+  createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, takenAt])
+  @@map("dose_logs")
+}
+
+enum DoseStatus {
+  TAKEN
+  MISSED
+}
+
+enum InjectionSite {
+  ABDOMEN_LEFT
+  ABDOMEN_RIGHT
+  THIGH_LEFT
+  THIGH_RIGHT
+  ARM_LEFT
+  ARM_RIGHT
+}
+
+/// 연속혈당(CGM) 측정값. 사용자·시각당 1개 (중복 업로드는 무시)
+model GlucoseReading {
+  userId     String
+  measuredAt DateTime
+  mgdl       Int           @db.SmallInt
+  source     GlucoseSource
+  createdAt  DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, measuredAt])
+  @@map("glucose_readings")
+}
+
+/// CSV_UPLOAD = CGM 앱 내보내기 파일, CGM_PARTNER = 제조사 API 연동(향후), SAMPLE = 가상 데이터
+enum GlucoseSource {
+  CSV_UPLOAD
+  CGM_PARTNER
+  SAMPLE
+}
+
+/// 식사 기록. 사진은 저장하지 않고 추정·확인한 값만 저장한다.
+model MealLog {
+  id        String     @id @default(cuid())
+  userId    String
+  eatenAt   DateTime
+  mealType  MealType
+  /// MealItem[] { name, kcal?, carbsG?, proteinG? }
+  items     Json
+  kcal      Int?
+  carbsG    Int?
+  proteinG  Int?
+  source    MealSource
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, eatenAt])
+  @@map("meal_logs")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum MealSource {
+  MANUAL
+  PHOTO_AI
+}
+
+/// 하루 1분 부작용 체크인 (사용자·날짜당 1개)
+model SymptomCheckIn {
+  id        String      @id @default(cuid())
+  userId    String
+  /// 한국 날짜
+  date      DateTime    @db.Date
+  /// { [SymptomCode]: 0..3 }
+  symptoms  Json
+  /// RedFlagCode[]
+  redFlags  Json
+  /// 오늘 식욕 0..10
+  appetite  Int?        @db.SmallInt
+  weightKg  Decimal?    @db.Decimal(5, 1)
+  /// 규칙 엔진이 정한 안내 단계 (src/domain/glp1/symptoms.ts)
+  triage    TriageLevel
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("symptom_check_ins")
+}
+
+enum TriageLevel {
+  NONE
+  SELF_CARE
+  CONTACT_CLINIC
+  URGENT
+}
+
+/// 위험 신호 (에스컬레이션). 의원 공유에 동의한 경우 의원 화면(향후)이 이 기록을 읽는다.
+model CareAlert {
+  id             String        @id @default(cuid())
+  userId         String
+  kind           CareAlertKind
+  level          TriageLevel
+  /// 같은 신호의 중복 기록 방지 키 (예: 해당 날짜)
+  dedupeKey      String
+  detectedAt     DateTime      @default(now())
+  /// 의원·코치가 확인한 시각 (향후)
+  acknowledgedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, dedupeKey])
+  @@index([userId, detectedAt])
+  @@map("care_alerts")
+}
+
+enum CareAlertKind {
+  SEVERE_SYMPTOM
+  PERSISTENT_VOMITING
+  LOW_GLUCOSE
+  SEVERE_LOW_GLUCOSE
+  MISSED_DOSES
+}
+
+/// AI 기능 사용 기록 (하루 사용 횟수 제한). 입력·결과 내용은 저장하지 않는다.
+model AiUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  /// 예: "meal-photo"
+  feature   String
+  ok        Boolean
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, feature, createdAt])
+  @@map("ai_usages")
 }

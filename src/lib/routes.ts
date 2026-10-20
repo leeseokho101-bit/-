@@ -16,6 +16,14 @@ export const routes = {
   reportBioAge: "/report/bio-age",
   dashboard: "/dashboard",
   activity: "/activity",
+  care: "/care",
+  careStart: "/care/start",
+  careDose: "/care/dose",
+  careGlucose: "/care/glucose",
+  careMeals: "/care/meals",
+  careCheckIn: "/care/check-in",
+  careResponse: "/care/response",
+  careSettings: "/care/settings",
   mypage: "/mypage",
   devSamples: "/dev/samples",
 } as const;
@@ -85,4 +93,13 @@ export const reportTabs = [
   { href: routes.reportBioAge, label: "생체나이" },
   { href: routes.reportPriorities, label: "우선순위 TOP 3" },
   { href: routes.reportPlan, label: "12주 계획" },
+] as const;
+
+/** GLP-1 케어(환자 앱) 하단 메뉴 */
+export const careTabs = [
+  { href: routes.care, label: "홈", icon: "⌂" },
+  { href: routes.careDose, label: "투약", icon: "💉" },
+  { href: routes.careGlucose, label: "혈당", icon: "📈" },
+  { href: routes.careMeals, label: "식사", icon: "🍚" },
+  { href: routes.careCheckIn, label: "체크인", icon: "✓" },
 ] as const;

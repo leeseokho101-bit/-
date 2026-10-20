@@ -15,6 +15,12 @@
   /* 차트 데이터 색 (dataviz 검증 통과: 명도·채도·대비) · 미터 트랙은 같은 색상의 밝은 단계 */
   --chart-1: #1a7fa6;
   --chart-track: #d8eaf2;
+  /* 혈당 범위 (낮음 ↔ 목표 ↔ 높음, dataviz 검증: CVD 인접 ΔE ≥ 11.7). 높음(#e08a3c)은 대비가 낮아 항상 글자 라벨과 함께 쓴다 */
+  --range-very-low: #9e2a2a;
+  --range-low: #e0605a;
+  --range-in: #1a7fa6;
+  --range-high: #e08a3c;
+  --range-very-high: #9a4a0c;
 }
 
 @theme inline {
@@ -27,6 +33,11 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-track: var(--chart-track);
+  --color-range-very-low: var(--range-very-low);
+  --color-range-low: var(--range-low);
+  --color-range-in: var(--range-in);
+  --color-range-high: var(--range-high);
+  --color-range-very-high: var(--range-very-high);
   --font-sans:
     "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
     system-ui, sans-serif;
